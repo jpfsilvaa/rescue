@@ -1,0 +1,23 @@
+NOVO COMANDO -> ./start.sh ../maps/gml/test -c ../../newConfig
+
+Ordem de tarefas/testes de protocolos (protocolos_TCC.txt)
+
+1) Agente -> Central
+	- Testar código 0; -- OK
+	- Testar código 1; -- OK
+	- Testar código 2; -- OK
+Testar para um tipo de agente de cada vez, depois com os três ao mesmo tempo. -- OK (falha no envio/escuta do agente)
+
+2) Central -> Central
+	- Testar uma mensagem direta de uma Central para outra Central -- OK
+	- Testar para o caso de um "código 2" (Agente->Central->Central) -- OK (falha no envio/escuta do agente)
+Testar com um agente de cada vez, depois com os três ao mesmo tempo. -- OK (falha no envio/escuta do agente)
+
+3) Central -> Agente
+	- Testar uma mensagem direta de uma central para um agente dela -- OK
+	- Testar Central->Central->Agente -- (falha no envio/escuta do agente)
+	- Testar desde um "código 2" até o agente final
+	- Testar desde um "código 1" para o mesmo agente que enviou o código 1
+	- Testar desde um "código 1" para outro agente que esteja em código 0
+
+4) Testar tudo funcionando de uma vez.

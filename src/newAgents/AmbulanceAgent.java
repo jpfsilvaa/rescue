@@ -56,7 +56,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
      *  que vai tratar essas informações e tomar decisões.
      */
 	@Override
-	protected HashMap <StandardEntityURN, List <EntityID>> percept(ChangeSet perceptions) {
+	protected HashMap <StandardEntityURN, List <EntityID>> percept(int time, ChangeSet perceptions) {
 		List <EntityID> roads = new ArrayList <EntityID>();
 		List <EntityID> buildings = new ArrayList <EntityID>();
 		List <EntityID> possibleRescue_civilian = new ArrayList <EntityID>();
@@ -66,11 +66,15 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 			switch(model.getEntity(changed).getStandardURN()) {
 				case CIVILIAN:
 					Human civilian = (Human) model.getEntity(changed);
-					if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
-						messages.add(new MessageProtocol(1, "A2C", 'A', me.getID(), 1, 
-									(civilian.getID() + " " + civilian.getBuriedness() + " " + civilian.getHP())));
-						possibleRescue_civilian.add(changed);
+					if (!civiliansPerceived.contains(changed.getValue())) { // TOMAR CUIDADO AQUI POR QUE ELE PODE PERCEBER, DEPOIS DESISTIR, AÍ NÃO ENTRA AQUI MAIS
+						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
+							System.out.println("CÓDIGO 1 - " + changed);
+							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 1, 
+										(civilian.getID() + " " + civilian.getBuriedness() + " " + civilian.getHP())));
+						}
+						civiliansPerceived.add(changed.getValue());
 					}
+					possibleRescue_civilian.add(changed);
 				break;
 				case ROAD:
 				if(myPosition.getValue() != changed.getValue())
@@ -79,9 +83,9 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 				case BUILDING:
 					Building buildingPerceived = (Building) model.getEntity(changed);
 					if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
-						if (buildingsInFirePerceived.contains(changed.getValue())) {
-							messages.add(new MessageProtocol(1, "A2C", 'A', me.getID(), 2, 
-								(buildingPerceived.getFieryness() + " " + buildingPerceived.getFloors() + " " +
+						if (!buildingsInFirePerceived.contains(changed.getValue())) {
+							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, ("F " +
+								buildingPerceived.getFieryness() + " " + buildingPerceived.getFloors() + " " +
 								buildingPerceived.getTotalArea())));
 						}
 						buildingsInFirePerceived.add(changed.getValue());
@@ -114,8 +118,8 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					if (Collections.disjoint(blockadesPerceived, currentBlockade)) {
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
 						// System.out.println("last" + Arrays.toString(b.getApexes()));
-						messages.add(new MessageProtocol(1, "A2C", 'A', me.getID(), 2, 
-								("p" + me.getPosition().toString() + " " + b.getRepairCost())));
+						messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+								("P " + me.getPosition().toString() + " " + b.getRepairCost())));
 					}
 					break;
 			}			
@@ -140,7 +144,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
         	AKSpeak msg = (AKSpeak) next;
         	byte[] msgRaw = msg.getContent();
         	msgFinal = new String (msgRaw);
-        	messageSplited = msgFinal.split(" ");
+        	msgSplited = msgFinal.split(" ");
         }
         
         //if(msgFinal != null)
@@ -240,7 +244,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	        		if(path != null) {
 		        		sendMove(time, path);
 		        		if(location() instanceof Refuge) {
-		        			//sendUnload(time);
+		        			//sendUnload(time); // ficou no think
 		        			System.out.println("************UNLOADING");
 		        			state = State.READY;
 		        			break;
@@ -253,20 +257,22 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		messages.add(new MessageProtocol(1, "A2C", 'A', me.getID(), 0, (time + me.getPosition().toString() + " " + state))); // Código 0 ao Centro
+		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
+			messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
 		
-		MessageProtocol m = MessageProtocol.getFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
-		if (m != null)
-			sendSpeak(time, m.getChannel(), (m.getEntireMessage()).getBytes());
-		
-		//System.out.println("--------tamanho da fila de mensagens -> " + messages.size());
+		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
+		if (messages.size() > 0) {
+			sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			messages.remove(0);
+		}
 		
 		if(someoneOnBoard() && location() instanceof Refuge) {
 			System.out.println("+AINDA TEM CIVIL NA AMB");
 			sendUnload(time);
 		}
+		
 		heardMessage(time, heard);
-		HashMap <StandardEntityURN, List <EntityID>> goals = percept(changed);
+		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
 		act(time);
 		System.out.println();

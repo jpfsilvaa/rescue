@@ -25,15 +25,31 @@ public class MessageProtocol {
 	private String type;
 	private String details;
 	private char agent;
+	private int time;
 	
-	public MessageProtocol(int channel, String type, char agent, EntityID myID, int code, String details) {
+	// Construtor para mensagem de um agente para central
+	public MessageProtocol(int channel, String type, char agent, int time, EntityID myID, int code, String details) {
 		this.channel = channel;
 		this.type = type;
 		this.agent = agent;
+		this.time = time;
 		this.myID = myID;
 		this.code = code;
 		this.details = details;
 	}
+	
+	// C2C A||F||P 'time' entityID_central_destinataria entityID_evento entityID_local_do_Agente_que_avistou_evento
+	// Costrutor para mensagem de uma central para uma central para outra central ou agente
+	public MessageProtocol(int channel, String type, char agent, int time, EntityID myID, String details) {
+		this.channel = channel;
+		this.type = type;
+		this.agent = agent;
+		this.time = time;
+		this.myID = myID;
+		this.details = details;
+		this.code = 3;
+	}
+	
 	
 	/**
 	 * Esse método define a mensagem que tem prioridade 
@@ -47,18 +63,20 @@ public class MessageProtocol {
 	 * @return - Retorna um objeto do tipo MessageProtocol, que foi definida como
 	 * prioritária no momento.
 	 */
-	public static MessageProtocol getFirstMessagesOnQueue(ArrayList<MessageProtocol> messages) {
-		Collections.sort(messages, Comparator.comparingInt(MessageProtocol::getCode).reversed());
-		// DAR UM JEITO DE ORDENAR PELO TIME QUANDO FOR CÓDIGO 0
-		if (messages != null) {
-			MessageProtocol m = messages.remove(0);
-			return m;
-		}
-		return null;
+	public static ArrayList<MessageProtocol> setFirstMessagesOnQueue(ArrayList<MessageProtocol> messages) {
+		ArrayList<MessageProtocol> messagesSortedByCode = messages;
+		
+		Collections.sort(messagesSortedByCode, Comparator.comparingInt(MessageProtocol::getCode).reversed());
+		
+//		if (messagesSorted != null)
+//			MessageProtocol m = messages.remove(0);
+			
+		return messagesSortedByCode;
 	}
 	
 	public String getEntireMessage() {
-		return this.getType() + " " + this.getAgent() + " " + this.getMyID() + " " + this.getCode() + " " + this.getDetails();
+		return this.getType() + " " + this.getAgent() + " " + this.getTime() + 
+				" " + this.getMyID() + " " + (this.getCode() == 3 ? "" : this.getCode() + " ") + this.getDetails();
 	}
 	
 	public int getCode() {
@@ -83,5 +101,9 @@ public class MessageProtocol {
 	
 	public char getAgent() {
 		return this.agent;
+	}
+	
+	public int getTime() {
+		return this.time;
 	}
 }

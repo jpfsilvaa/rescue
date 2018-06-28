@@ -62,7 +62,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	
 	
 	@Override
-	protected HashMap <StandardEntityURN, List <EntityID>> percept(ChangeSet perceptions) {
+	protected HashMap <StandardEntityURN, List <EntityID>> percept(int time, ChangeSet perceptions) {
 		List <EntityID> roads = new ArrayList<EntityID>();
 		List <EntityID> buildings = new ArrayList<EntityID>();
 		EntityID myPosition = this.location().getID();
@@ -71,11 +71,11 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 			switch(model.getEntity(changed).getStandardURN()) {
 				case CIVILIAN:
 					Human civilian = (Human) model.getEntity(changed);
-					if (civiliansPerceived.contains(changed.getValue())) {
+					if (!civiliansPerceived.contains(changed.getValue())) {
 						if (civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							System.out.println("PERCEBI CIVIL!!!!!!!-B");
-							messages.add(new MessageProtocol(1, "A2C", 'F', me.getID(), 2, 
-									("a" + me.getPosition() + civilian.getBuriedness() + " " +
+							messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+									("A " + me.getPosition() + civilian.getBuriedness() + " " +
 									civilian.getHP() + civilian.getStamina())));
 						}
 						civiliansPerceived.add(changed.getValue());
@@ -88,11 +88,14 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 				case BUILDING:
 					if(myPosition.getValue() != changed.getValue()) {
 						Building building = (Building) model.getEntity(changed);
-						if(building.getFieryness() > 0 && building.getFieryness() < 4) {
-							messages.add(new MessageProtocol(1, "A2C", 'F', me.getID(), 1, 
-									(building.getID() + " " + building.getTemperature() + " " + building.getFieryness())));
-							buildings.add(changed);
+						if (!buildingsInFirePerceived.contains(changed.getValue())) {
+							if(building.getFieryness() > 0 && building.getFieryness() < 4) {
+								messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 1, 
+										(building.getID() + " " + building.getTemperature() + " " + building.getFieryness())));
+								buildingsInFirePerceived.add(changed.getValue());
+							}
 						}
+						buildings.add(changed);
 					}
 					break;
 				case BLOCKADE:
@@ -107,8 +110,8 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					if (Collections.disjoint(blockadesPerceived, currentBlockade)) {
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
 						// System.out.println("last" + Arrays.toString(b.getApexes()));
-						messages.add(new MessageProtocol(1, "A2C", 'F', me.getID(), 2, 
-								("p" + me.getPosition().toString() + " " + b.getRepairCost())));
+						messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+								("P " + me.getPosition().toString() + " " + b.getRepairCost())));
 					}
 					break;
 			}
@@ -132,7 +135,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
         	//System.out.println("URN-->" + msg.getURN());
         	byte[] msgRaw = msg.getContent();
         	msgFinal = new String (msgRaw);
-        	messageSplited = msgFinal.split(" ");
+        	msgSplited = msgFinal.split(" ");
         }
         //if(messageResult != null)
         	//System.out.println("->(F) MESSAGE RECEIVED: " + messageResult.toString());
@@ -173,7 +176,6 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	protected void act(int time) {
 		switch(state) {
 			case EXTINGUISHING:
-				sendSpeak(time, 1, "EXTINGUISHING".getBytes());
 				Building buildingGoal = (Building) model.getEntity(goal);
 				//System.out.println("\tEXTINGUISHING!");
 				//System.out.println("TANK: " + me.getWater());
@@ -238,15 +240,19 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		messages.add(new MessageProtocol(1, "A2C", 'F', me.getID(), 0, me.getPosition().toString())); // Código 0 ao Centro
+		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
+			messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 0, time + " " + me.getPosition().toString())); // Código 0 ao Centro
 
-		MessageProtocol m = MessageProtocol.getFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
-		if (m != null)
-			sendSpeak(time, m.getChannel(), (m.getEntireMessage()).getBytes());
+		// MessageProtocol m = MessageProtocol.setFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
+		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
+		if (messages.size() > 0) {
+			sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			messages.remove(0);
+		}
 		
 		heardMessage(time, heard);
 		//System.out.println("(F)STATE---> " + state);
-		HashMap <StandardEntityURN, List <EntityID>> goals = percept(changed);
+		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
 		act(time);
 		System.out.println();

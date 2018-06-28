@@ -16,7 +16,7 @@ import sample.SampleSearch;
 
 public abstract class AbstractAgent<E extends StandardEntity> extends StandardAgent<E> {
 	
-	protected String[] messageSplited;
+	protected String[] msgSplited;
 	protected String msgFinal;
 	protected Random rnd;
 	protected SampleSearch search;
@@ -25,8 +25,14 @@ public abstract class AbstractAgent<E extends StandardEntity> extends StandardAg
 	protected List<Integer> blockadesPerceived = new ArrayList<>(); // amb e bomb
 	protected List<Integer> civiliansPerceived = new ArrayList<>(); // bomb e pol
 	protected List<Integer> buildingsInFirePerceived = new ArrayList<>(); // amb e pol
+	protected MessageProtocol msgReceived;
+	protected enum who{
+		AGENT,
+		CENTRAL,
+		NOTHING
+	};
 	
-	protected abstract HashMap <StandardEntityURN, List <EntityID>> percept(ChangeSet perceptions);
+	protected abstract HashMap <StandardEntityURN, List <EntityID>> percept(int time, ChangeSet perceptions);
 	
 	protected abstract void heardMessage(int time, Collection<Command> heard);
 	

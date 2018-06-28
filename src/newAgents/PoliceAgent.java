@@ -62,13 +62,13 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
       * do agente.
       */
 	@Override
-	protected HashMap<StandardEntityURN, List<EntityID>> percept(ChangeSet perceptions) {
+	protected HashMap<StandardEntityURN, List<EntityID>> percept(int time, ChangeSet perceptions) {
 		List<EntityID> blocks = new ArrayList<EntityID>();
 		List<EntityID> roadsToPatrol = new ArrayList<EntityID>();
 		
 		Blockade target = getTargetBlockade();
 		if(target != null) {
-			messages.add(new MessageProtocol(1, "A2C", 'P', me.getID(), 1, 
+			messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 1, 
 					(target.getID() + " " + target.getRepairCost())));
 			blocks.add(target.getID());
 		}
@@ -77,11 +77,11 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 			switch(model.getEntity(changed).getStandardURN()) {
 				case CIVILIAN:
 					Human civilian = (Human) model.getEntity(changed);
-					if (civiliansPerceived.contains(changed.getValue())) { 
+					if (!civiliansPerceived.contains(changed.getValue())) { 
 						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							System.out.println("PERCEBI CIVIL!!!!");
-							messages.add(new MessageProtocol(1, "A2C", 'F', me.getID(), 2, 
-									("a" + me.getPosition() + civilian.getBuriedness() + " " +
+							messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+									("A " + me.getPosition() + civilian.getBuriedness() + " " +
 									civilian.getHP() + civilian.getStamina())));
 						}
 						civiliansPerceived.add(changed.getValue());
@@ -92,10 +92,10 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					break;
 				case BUILDING:
 					Building buildingPerceived = (Building) model.getEntity(changed);
-					if (buildingsInFirePerceived.contains(changed.getValue())) {
+					if (!buildingsInFirePerceived.contains(changed.getValue())) {
 						if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
-							messages.add(new MessageProtocol(1, "A2C", 'A', me.getID(), 2, 
-									("f" + me.getPosition() + buildingPerceived.getFieryness() +
+							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+									("F " + me.getPosition() + buildingPerceived.getFieryness() +
 									" " + buildingPerceived.getFloors() + " " +
 									buildingPerceived.getTotalArea())));
 						}
@@ -121,7 +121,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
         	AKSpeak msg = (AKSpeak) next;
         	byte[] msgRaw = msg.getContent();
         	msgFinal = new String (msgRaw);
-        	messageSplited = msgFinal.split(" ");
+        	msgSplited = msgFinal.split(" ");
         }
         //if(msgFinal != null)
         	//System.out.println("->(P) MESSAGE RECEIVED: " + msgFinal);
@@ -199,15 +199,19 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		messages.add(new MessageProtocol(1, "A2C", 'P', me.getID(), 0, me.getPosition().toString())); // Código 0 ao Centro
+		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
+			messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 0, time + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
-		MessageProtocol m = MessageProtocol.getFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
-		if (m != null)
-			sendSpeak(time, m.getChannel(), (m.getEntireMessage()).getBytes());
+		// MessageProtocol m = MessageProtocol.setFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
+		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
+		if (messages.size() > 0) {
+			sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			messages.remove(0);
+		}
 		
 		heardMessage(time, heard);
 		//System.out.println("(P)STATE---> " + state);
-		HashMap <StandardEntityURN, List <EntityID>> goals = percept(changed);
+		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
 		act(time);		
 		System.out.println();

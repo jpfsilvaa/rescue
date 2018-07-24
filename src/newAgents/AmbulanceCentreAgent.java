@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
-import newAgents.AbstractAgent.who;
+import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.entities.AmbulanceCentre;
@@ -40,26 +40,19 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
         }
         
         if (msgSplited != null) {
-        	if (msgSplited.length > 1) {
-		        if (channelMsgReceived == 1) {
-		        	System.out.println("---A " + Arrays.toString(msgSplited) + " " + msgSplited.length);
-		        	msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
-		        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-		        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
-		        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
-		        }
-		        else if (channelMsgReceived == 2) {
-		        	msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
-		        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-		        			new EntityID(Integer.parseInt(msgSplited[3])), 
-		        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
-		        }
-		        
+        	if (msgSplited.length > 1) {		        
 		        switch(messageFrom(channelMsgReceived, msgSplited)) {
 			    	case AGENT:
-			    		//System.out.println("(AC) Recebi a mensagem código " + messageSplited[4] + " do bombeiro que está no local " + messageSplited[4]);
+			    		// TODO -> fazer isso da linha de baixo nas outras duas centrais
+			    		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
+			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+			        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
+			        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
+			    		
+			    		System.out.println("+++++(AC) -> Recebi mensagem de código " + msgReceived.getCode());
+			    		
 			    		if (msgReceived.getCode() == 2) {
-			    			String centralDestination = msgReceived.getDetails().split(", ")[0].substring(1);
+			    			String centralDestination = msgReceived.getDetails().split(", ")[2];
 			    			switch(centralDestination) {
 			    				case "A":
 			    					messages.add(new MessageProtocol(2, "C2C", 'A', time, this.getID(), msgReceived.getDetails()));
@@ -72,8 +65,15 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 			    					break;
 			    			}
 			    		}
+			    		
+			    		// TODO -> (AQUI E NAS OUTRAS CENTRAIS) Tratar os dados recebidos de código 0
 			    		break;
 			    	case CENTRAL:
+			    		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
+			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+			        			new EntityID(Integer.parseInt(msgSplited[3])), 
+			        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
+			    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
 			    		System.out.println("(AC) Recebi a mensagem código " + msgReceived.getCode() + " de uma central");
 			    		break;
 			    	case NOTHING:
@@ -110,20 +110,20 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
                           StandardEntityURN.POLICE_OFFICE);
     }
     
-	private who messageFrom(int channelMsgReceived, String[] messageSplited) {
-        who result = who.NOTHING;
+	private Who messageFrom(int channelMsgReceived, String[] messageSplited) {
+        Who result = Who.NOTHING;
         
 		if(messageSplited != null) {
         	if (channelMsgReceived == 1) {
 		        if (messageSplited[0].equals("A2C")) {
 		        	if (messageSplited[1].equals("A")) {
-		        		result = who.AGENT;
+		        		result = Who.AGENT;
 		        	}
 		        }
         	}
         	else if (channelMsgReceived == 2) {
         		if (messageSplited[0].equals("C2C")) {
-        			result = who.CENTRAL;
+        			result = Who.CENTRAL;
 		        }
         	}
         }

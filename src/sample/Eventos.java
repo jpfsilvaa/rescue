@@ -226,7 +226,7 @@ public class Eventos /*extends AbstractQueue<EntityID>*/{
 
 	@Override
 	public Iterator<EntityID> iterator() {
-		// TODO Auto-generated method stub
+		// 
 		return null;
 	}
 

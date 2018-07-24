@@ -39,7 +39,7 @@ public class MessageProtocol {
 	}
 	
 	// C2C A||F||P 'time' entityID_central_destinataria entityID_evento entityID_local_do_Agente_que_avistou_evento
-	// Costrutor para mensagem de uma central para uma central para outra central ou agente
+	// Costrutor para mensagem de uma central para -> uma central para -> outra central ou agente
 	public MessageProtocol(int channel, String type, char agent, int time, EntityID myID, String details) {
 		this.channel = channel;
 		this.type = type;

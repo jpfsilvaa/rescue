@@ -74,8 +74,9 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					if (!civiliansPerceived.contains(changed.getValue())) {
 						if (civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							System.out.println("PERCEBI CIVIL!!!!!!!-B");
-							messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 2, 
-									("A " + me.getPosition() + civilian.getBuriedness() + " " +
+							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+									(me.getPosition() + " " + civilian.getID() + " " +
+									"A " + civilian.getBuriedness() + " " +
 									civilian.getHP() + civilian.getStamina())));
 						}
 						civiliansPerceived.add(changed.getValue());
@@ -88,14 +89,9 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 				case BUILDING:
 					if(myPosition.getValue() != changed.getValue()) {
 						Building building = (Building) model.getEntity(changed);
-						if (!buildingsInFirePerceived.contains(changed.getValue())) {
-							if(building.getFieryness() > 0 && building.getFieryness() < 4) {
-								messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 1, 
-										(building.getID() + " " + building.getTemperature() + " " + building.getFieryness())));
-								buildingsInFirePerceived.add(changed.getValue());
-							}
+						if(building.getFieryness() > 0 && building.getFieryness() < 4) {
+							buildings.add(changed);
 						}
-						buildings.add(changed);
 					}
 					break;
 				case BLOCKADE:
@@ -177,6 +173,12 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		switch(state) {
 			case EXTINGUISHING:
 				Building buildingGoal = (Building) model.getEntity(goal);
+				if (!buildingsInFirePerceived.contains(goal.getValue())) {
+					messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 1, 
+							(me.getPosition() + " " + buildingGoal.getID() + " " +
+							buildingGoal.getFloors() + " " + buildingGoal.getFieryness())));
+					buildingsInFirePerceived.add(goal.getValue());
+				}
 				//System.out.println("\tEXTINGUISHING!");
 				//System.out.println("TANK: " + me.getWater());
 				//System.out.println("BUILDING FIERYNESS: "+ buildingGoal.getFieryness());
@@ -241,12 +243,13 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 0, time + " " + me.getPosition().toString())); // Código 0 ao Centro
+			messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 0, time +
+					" " + me.getPosition().toString() + " " + state)); // Código 0 ao Centro
 
 		// MessageProtocol m = MessageProtocol.setFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
 		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {
-			sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			// sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
 			messages.remove(0);
 		}
 		

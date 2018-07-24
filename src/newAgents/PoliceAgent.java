@@ -68,8 +68,6 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		
 		Blockade target = getTargetBlockade();
 		if(target != null) {
-			messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 1, 
-					(target.getID() + " " + target.getRepairCost())));
 			blocks.add(target.getID());
 		}
 		
@@ -79,10 +77,10 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					Human civilian = (Human) model.getEntity(changed);
 					if (!civiliansPerceived.contains(changed.getValue())) { 
 						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
-							System.out.println("PERCEBI CIVIL!!!!");
+							// System.out.println("PERCEBI CIVIL!!!!");
 							messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 2, 
-									("A " + me.getPosition() + civilian.getBuriedness() + " " +
-									civilian.getHP() + civilian.getStamina())));
+									(me.getPosition() + " " + civilian.getID() + " A " + civilian.getBuriedness() 
+									+ " " + civilian.getHP())));
 						}
 						civiliansPerceived.add(changed.getValue());
 					}
@@ -95,9 +93,8 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					if (!buildingsInFirePerceived.contains(changed.getValue())) {
 						if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
 							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
-									("F " + me.getPosition() + buildingPerceived.getFieryness() +
-									" " + buildingPerceived.getFloors() + " " +
-									buildingPerceived.getTotalArea())));
+									(me.getPosition() + " " + buildingPerceived.getID() + " F " 
+									+ buildingPerceived.getFieryness() +" " + buildingPerceived.getFloors())));
 						}
 						buildingsInFirePerceived.add(changed.getValue());
 					}
@@ -177,9 +174,13 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 			case REMOVING_BLOCKADE:
 				if(currentBlockade == null)
 					state = State.READY;
-				else
+				else {
+					final Blockade currBlock = (Blockade) model.getEntity(currentBlockade);
+					messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 1, 
+							(me.getPosition() + " " + currBlock.getID() + " " + currBlock.getRepairCost())));
 					sendClear(time, currentBlockade);
 					currentBlockade = null;
+				}
 				break;
 			case PATROL:
 				path = search.breadthFirstSearch(location().getID(), goal);
@@ -200,12 +201,12 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 0, time + " " + me.getPosition().toString())); // Código 0 ao Centro
+			messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 0, time 
+					+ " " + me.getPosition().toString() + " " + state)); // Código 0 ao Centro
 		
-		// MessageProtocol m = MessageProtocol.setFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
 		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {
-			sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			// sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
 			messages.remove(0);
 		}
 		
@@ -215,7 +216,6 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		deliberate(goals);
 		act(time);		
 		System.out.println();
-		
 	}
 	
 	/**

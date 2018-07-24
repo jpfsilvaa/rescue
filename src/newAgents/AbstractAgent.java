@@ -26,7 +26,7 @@ public abstract class AbstractAgent<E extends StandardEntity> extends StandardAg
 	protected List<Integer> civiliansPerceived = new ArrayList<>(); // bomb e pol
 	protected List<Integer> buildingsInFirePerceived = new ArrayList<>(); // amb e pol
 	protected MessageProtocol msgReceived;
-	protected enum who{
+	protected enum Who{
 		AGENT,
 		CENTRAL,
 		NOTHING

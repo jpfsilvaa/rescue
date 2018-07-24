@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
-import newAgents.AbstractAgent.who;
+import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.entities.FireStation;
@@ -41,24 +41,16 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
         
         if (msgSplited != null) {
         	if (msgSplited.length > 1) {
-		        if (channelMsgReceived == 1) {
-		        	msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
-		        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-		        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
-		        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
-		        }
-		        else if (channelMsgReceived == 2) {
-		        	msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
-		        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-		        			new EntityID(Integer.parseInt(msgSplited[3])), 
-		        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
-		        }
-		        
 		        switch(messageFrom(channelMsgReceived, msgSplited)) {
 		        	case AGENT:
+		        		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
+			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+			        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
+			        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
 		        		//System.out.println("(FS) Recebi a mensagem código " + messageSplited[4] + " do bombeiro que está no local " + messageSplited[4]);
 			    		if (msgReceived.getCode() == 2) {
-			    			String centralDestination = msgReceived.getDetails().split(", ")[0].substring(1);
+			    			// TODO -> COnfirmar esse split de baixo
+			    			String centralDestination = msgReceived.getDetails().split(", ")[2];
 			    			switch(centralDestination) {
 			    				case "A":
 			    					messages.add(new MessageProtocol(2, "C2C", 'A', time, this.getID(), msgReceived.getDetails()));
@@ -73,6 +65,10 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 			    		}
 		        		break;
 		        	case CENTRAL:
+		        		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
+			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+			        			new EntityID(Integer.parseInt(msgSplited[3])), 
+			        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
 		        		System.out.println("(FS) Recebi a mensagem código " + msgReceived.getCode() + " de uma central");
 		        		break;
 		        	case NOTHING:
@@ -109,20 +105,20 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
                           StandardEntityURN.POLICE_OFFICE);
     }
     
-	private who messageFrom(int channelMsgReceived, String[] messageSplited) {
-        who result = who.NOTHING;
+	private Who messageFrom(int channelMsgReceived, String[] messageSplited) {
+        Who result = Who.NOTHING;
         
 		if(messageSplited != null) {
         	if (channelMsgReceived == 1) {
 		        if (messageSplited[0].equals("A2C")) {
 		        	if (messageSplited[1].equals("F")) {
-		        		result = who.AGENT;
+		        		result = Who.AGENT;
 		        	}
 		        }
         	}
         	else if (channelMsgReceived == 2) {
         		if (messageSplited[0].equals("C2C")) {
-        			result = who.CENTRAL;
+        			result = Who.CENTRAL;
 		        }
         	}
         }

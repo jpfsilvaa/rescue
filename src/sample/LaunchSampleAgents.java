@@ -2,12 +2,12 @@ package sample;
 
 import java.io.IOException;
 
+import centers.AmbulanceCentreAgent;
+import centers.FireStationAgent;
+import centers.PoliceOfficeAgent;
 import newAgents.AmbulanceAgent;
-import newAgents.AmbulanceCentreAgent;
 import newAgents.FireAgent;
-import newAgents.FireStationAgent;
 import newAgents.PoliceAgent;
-import newAgents.PoliceOfficeAgent;
 import rescuecore.objects.AmbulanceCenter;
 import rescuecore2.components.ComponentLauncher;
 import rescuecore2.components.TCPComponentLauncher;

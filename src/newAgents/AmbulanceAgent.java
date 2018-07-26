@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import communication.AbstractMessageProtocol;
+import communication.DummyProtocol;
+import communication.MessageConfirmation;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.entities.AmbulanceTeam;
@@ -76,10 +79,9 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					Building buildingPerceived = (Building) model.getEntity(changed);
 					if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
 						if (!buildingsInFirePerceived.contains(changed.getValue())) {
-							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+							messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
 								(me.getPosition() + " " + buildingPerceived.getID() + 
-								"F " + buildingPerceived.getFieryness() + " " + buildingPerceived.getFloors() + " " +
-								buildingPerceived.getTotalArea())));
+								" F " + buildingPerceived.getFieryness() + " " + buildingPerceived.getFloors())));
 						}
 						buildingsInFirePerceived.add(changed.getValue());
 					}						
@@ -111,8 +113,8 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					if (Collections.disjoint(blockadesPerceived, currentBlockade)) {
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
 						// System.out.println("last" + Arrays.toString(b.getApexes()));
-						messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
-								(me.getPosition() + " " + b.getID() + " " + "P " + b.getRepairCost())));
+						messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+								(me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
 					}
 					break;
 			}			
@@ -129,30 +131,43 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	
 	@Override
 	protected void heardMessage(int time, Collection<Command> heard) {
+		int channelMsgReceived = 0;
 		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY))
             sendSubscribe(time, 1);
-    	
+		
+    	int cont = 0;
         for (Command next : heard) {
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
+        	channelMsgReceived = msg.getChannel();
         	byte[] msgRaw = msg.getContent();
-        	msgFinal = new String (msgRaw);
-        	msgSplited = msgFinal.split(" ");
+        	msgFinal.add(new String (msgRaw));
+        	System.out.println(++cont);
+        	// msgSplited = msgFinal.split(" ");
         }
         
-        //if(msgFinal != null)
-        	//System.out.println("->(A)MESSAGE RECEIVED: " + msgFinal);
-    	/*if(messageResult != null) {
-        	for(int i = 0; i < messageResult.length; i++)
-        		System.out.print("MESSAGE RECEIVED: " + messageResult[i] + "\t");
-        	System.out.println();
-        	if(messageResult.length == 1) {
-        		if(messageResult[0] == "Help" || messageResult[0] == "Ouch") {
-        			System.out.println(this.getID() + "CIVILIAN ASKING FOR HELP AROUND HERE!!");
-        			// CRIAR UM PROTOCOLO NAS PRÓXIMAS FASES
-        		}
-        	}
-        }*/
+        for (String msgReceived : msgFinal) {
+	        msgSplited = msgReceived.split(" ");
+        	if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {
+	        		int code = Integer.parseInt(msgSplited[4]);
+	        		switch(code) {
+	        			case 4: // Comando de uma central para o agente
+	        				break;
+	        			case 5: // Confirmação de mensagem
+	        				System.out.println("$$$$$$$$$$44");
+	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
+	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
+	        						new EntityID(Integer.parseInt(msgSplited[5])));
+	        				if (confirmation.getDestiny().getValue() == me.getID().getValue())
+	        					recipientHasReceived = true;
+	        				msgSplited = null;
+	        				break;
+	        		}
+	        	}
+	        }
+        }
     }
 
 	/**
@@ -223,7 +238,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 				if (!civiliansPerceived.contains(goal.getValue())) { // TOMAR CUIDADO AQUI POR QUE ELE PODE PERCEBER, DEPOIS DESISTIR, AÍ NÃO ENTRA AQUI MAIS
 					if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 						System.out.println("CÓDIGO 1 - " + goal);
-						messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 1, 
+						messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 1, 
 									(me.getPosition() + " " + civilian.getID() +
 										" " + civilian.getBuriedness() + " " + civilian.getHP())));
 					}
@@ -259,21 +274,25 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		msgFinal.clear();
+		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 
+			messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 
 					0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
 		
-		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
+		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
 		if (messages.size() > 0) {
 			// TODO -> Fazer a confirmação do recebimento das mensagens 
-			// (MAS COMO CONFIRMAR DETERMINADA MENSAGEM?? ELA VAI TER UM ID??)
-//			if (!recipientHasReceived)
+			if (!recipientHasReceived) {
+				System.out.println("----(A)ENVIANDO CÓDIGO " + messages.get(0).getCode());
 				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
-//			else {
+			}
+			else {
+				System.out.println("###(A)CONFIRMAÇÃO RECEBIDA");
 				recipientHasReceived  = false;
 				messages.remove(0);
-//			}
+			}
 		}
 		
 		if(someoneOnBoard() && location() instanceof Refuge) {

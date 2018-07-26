@@ -1,4 +1,4 @@
-package newAgents;
+package centers;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -6,6 +6,10 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
+import communication.DummyProtocol;
+import communication.MessageConfirmation;
+import communication.AbstractMessageProtocol;
+import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
@@ -35,51 +39,53 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
         	channelMsgReceived = msg.getChannel();
         	whoSent = msg.getAgentID();
         	byte[] msgRaw = msg.getContent();
-        	msgFinal = new String (msgRaw);
-        	msgSplited = msgFinal.split(" ");
+        	msgFinal.add(new String (msgRaw));
+        	// msgSplited = msgFinal.split(" ");
         }
         
-        if (msgSplited != null) {
-        	if (msgSplited.length > 1) {		        
-		        switch(messageFrom(channelMsgReceived, msgSplited)) {
-			    	case AGENT:
-			    		// TODO -> fazer isso da linha de baixo nas outras duas centrais
-			    		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
-			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-			        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
-			        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
-			    		
-			    		System.out.println("+++++(AC) -> Recebi mensagem de código " + msgReceived.getCode());
-			    		
-			    		if (msgReceived.getCode() == 2) {
-			    			String centralDestination = msgReceived.getDetails().split(", ")[2];
-			    			switch(centralDestination) {
-			    				case "A":
-			    					messages.add(new MessageProtocol(2, "C2C", 'A', time, this.getID(), msgReceived.getDetails()));
-			    					break;
-			    				case "F":
-			    					messages.add(new MessageProtocol(2, "C2C", 'F', time, this.getID(), msgReceived.getDetails()));
-			    					break;
-			    				case "P":
-			    					messages.add(new MessageProtocol(2, "C2C", 'A', time, this.getID(), msgReceived.getDetails()));
-			    					break;
-			    			}
-			    		}
-			    		
-			    		// TODO -> (AQUI E NAS OUTRAS CENTRAIS) Tratar os dados recebidos de código 0
-			    		break;
-			    	case CENTRAL:
-			    		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
-			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-			        			new EntityID(Integer.parseInt(msgSplited[3])), 
-			        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
-			    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
-			    		System.out.println("(AC) Recebi a mensagem código " + msgReceived.getCode() + " de uma central");
-			    		break;
-			    	case NOTHING:
-			    		break;
-		        }
-        	}
+        for (String message : msgFinal) {
+        	msgSplited = message.split(" ");
+	        if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {		        
+			        switch(messageFrom(channelMsgReceived, msgSplited)) {
+				    	case AGENT:
+				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
+				        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+				        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
+				        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
+				    		
+				    		// System.out.println("+++++(AC) -> Recebi mensagem de código " + msgReceived.getCode());
+				    		
+				    		if (msgReceived.getCode() == 2) {
+				    			String[] splitedDetails = msgReceived.getDetails().split(", ");
+				    			String centralDestination = splitedDetails[2];
+				    			messages.add(new DummyProtocol(2, "C2C", 'A', time, this.getID(), 
+		    							3, (centralDestination + " " + splitedDetails[3] + " "+ splitedDetails[4])));
+		    					break;
+				    		}
+				    		
+				    		// TODO -> (AQUI E NAS OUTRAS CENTRAIS) Tratar os dados recebidos de código 0
+				    		msgSplited = null;
+				    		break;
+				    	case CENTRAL:
+				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
+				        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+				        			new EntityID(Integer.parseInt(msgSplited[3])), 3,
+				        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
+				    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
+				    		System.out.println("(AC) Recebi a mensagem código " + msgReceived.getCode() + " de uma central");
+				    		msgSplited = null;
+				    		break;
+				    	case NOTHING:
+				    		msgSplited = null;
+				    		break;
+			        }
+			        
+			        // ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
+			        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'A', time, this.getID(), 5, msgReceived.getSenderID()));
+			        
+	        	}
+	        }
         }
         
 	}
@@ -94,11 +100,20 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		msgFinal.clear();
 		heardMessage(time, heard);
 		
 		if (messages.size() > 0) {
-			sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
-			messages.remove(0);
+			if (MessageConfirmation.hasConfirmationToSend(messages)) {
+				MessageConfirmation mc = MessageConfirmation.getConfirmation(messages);
+				// System.out.println("(++++AC) enviando mensagem de confirmação! -> " + mc.getEntireMessage());
+				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
+				messages.remove(mc);
+			}
+			if (messages.size() > 0) {
+				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
+				messages.remove(0);
+			}
 		}
 	}
 
@@ -123,7 +138,10 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
         	}
         	else if (channelMsgReceived == 2) {
         		if (messageSplited[0].equals("C2C")) {
-        			result = Who.CENTRAL;
+        			// System.out.println(Arrays.toString(messageSplited));
+        			if (new EntityID(Integer.parseInt(messageSplited[3])) != this.getID())
+        				if(messageSplited[5].equals("P"))
+        					result = Who.CENTRAL;
 		        }
         	}
         }

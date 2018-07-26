@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import communication.MessageConfirmation;
+import communication.AbstractMessageProtocol;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.components.StandardAgent;
 import rescuecore2.standard.entities.StandardEntity;
@@ -17,16 +19,17 @@ import sample.SampleSearch;
 public abstract class AbstractAgent<E extends StandardEntity> extends StandardAgent<E> {
 	
 	protected String[] msgSplited;
-	protected String msgFinal;
+	protected ArrayList<String> msgFinal = new ArrayList<>();
 	protected Random rnd;
 	protected SampleSearch search;
 	protected EntityID goal;
-	protected ArrayList<MessageProtocol> messages = new ArrayList<>();
+	protected ArrayList<AbstractMessageProtocol> messages = new ArrayList<>();
 	protected List<Integer> blockadesPerceived = new ArrayList<>(); // amb e bomb
 	protected List<Integer> civiliansPerceived = new ArrayList<>(); // bomb e pol
 	protected List<Integer> buildingsInFirePerceived = new ArrayList<>(); // amb e pol
-	protected MessageProtocol msgReceived;
-	protected enum Who{
+	protected AbstractMessageProtocol msgReceived;
+	protected MessageConfirmation confirmation;
+	public enum Who{
 		AGENT,
 		CENTRAL,
 		NOTHING

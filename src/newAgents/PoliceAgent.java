@@ -9,6 +9,8 @@ import java.util.Random;
 
 import org.jfree.util.Rotation;
 
+import communication.AbstractMessageProtocol;
+import communication.DummyProtocol;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.messages.MessageComponent;
@@ -78,7 +80,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					if (!civiliansPerceived.contains(changed.getValue())) { 
 						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							// System.out.println("PERCEBI CIVIL!!!!");
-							messages.add(new MessageProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+							messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
 									(me.getPosition() + " " + civilian.getID() + " A " + civilian.getBuriedness() 
 									+ " " + civilian.getHP())));
 						}
@@ -92,7 +94,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					Building buildingPerceived = (Building) model.getEntity(changed);
 					if (!buildingsInFirePerceived.contains(changed.getValue())) {
 						if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
-							messages.add(new MessageProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+							messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
 									(me.getPosition() + " " + buildingPerceived.getID() + " F " 
 									+ buildingPerceived.getFieryness() +" " + buildingPerceived.getFloors())));
 						}
@@ -117,22 +119,11 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
         	byte[] msgRaw = msg.getContent();
-        	msgFinal = new String (msgRaw);
-        	msgSplited = msgFinal.split(" ");
+        	// msgFinal = new String (msgRaw);
+        	// msgSplited = msgFinal.split(" ");
         }
-        //if(msgFinal != null)
-        	//System.out.println("->(P) MESSAGE RECEIVED: " + msgFinal);
-    	/*if(messageResult != null) {
-        	for(int i = 0; i < messageResult.length; i++)
-        		System.out.print("MESSAGE(SPLIT) RECEIVED: " + messageResult[i] + "\t");
-        	System.out.println();
-        	if(messageResult.length == 1) {
-        		if(messageResult[0] == "Help" || messageResult[0] == "Ouch") {
-        			System.out.println(this.getID() + "CIVILIAN ASKING FOR HELP AROUND HERE!!");
-        			// CRIAR UM PROTOCOLO NAS PRÓXIMAS FASES
-        		}
-        	}
-        }*/
+        
+     // TODO -> TRATAR O ArrayList msgFinal e testar a confirmação de mensagem
 	}
 
 	/**
@@ -176,8 +167,9 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					state = State.READY;
 				else {
 					final Blockade currBlock = (Blockade) model.getEntity(currentBlockade);
-					messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 1, 
-							(me.getPosition() + " " + currBlock.getID() + " " + currBlock.getRepairCost())));
+					messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 1, 
+							(me.getPosition() + " " + currBlock.getID() + " " 
+							+ currBlock.getRepairCost() + " " + currBlock.getPosition())));
 					sendClear(time, currentBlockade);
 					currentBlockade = null;
 				}
@@ -201,11 +193,12 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new MessageProtocol(1, "A2C", 'P', time, me.getID(), 0, time 
+			messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 0, time 
 					+ " " + me.getPosition().toString() + " " + state)); // Código 0 ao Centro
 		
-		messages = MessageProtocol.setFirstMessagesOnQueue(messages);
+		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {
+			// System.out.println("ENVIANDO CÓDIGO " + messages.get(0).getCode());
 			// sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
 			messages.remove(0);
 		}

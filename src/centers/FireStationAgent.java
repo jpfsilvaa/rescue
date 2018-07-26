@@ -1,4 +1,4 @@
-package newAgents;
+package centers;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -6,6 +6,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
+import communication.AbstractMessageProtocol;
+import communication.DummyProtocol;
+import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
@@ -35,43 +38,42 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
         	channelMsgReceived = msg.getChannel();
         	whoSent = msg.getAgentID();
         	byte[] msgRaw = msg.getContent();
-        	msgFinal = new String (msgRaw);
-        	msgSplited = msgFinal.split(" ");
+        	// msgFinal = new String (msgRaw);
+        	// msgSplited = msgFinal.split(" ");
         }
         
+        // TODO -> TRATAR O ArrayList msgFinal e testar a confirmação de mensagem
         if (msgSplited != null) {
         	if (msgSplited.length > 1) {
 		        switch(messageFrom(channelMsgReceived, msgSplited)) {
 		        	case AGENT:
-		        		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
+		        		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
 			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
 			        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
 			        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
-		        		//System.out.println("(FS) Recebi a mensagem código " + messageSplited[4] + " do bombeiro que está no local " + messageSplited[4]);
-			    		if (msgReceived.getCode() == 2) {
-			    			// TODO -> COnfirmar esse split de baixo
-			    			String centralDestination = msgReceived.getDetails().split(", ")[2];
-			    			switch(centralDestination) {
-			    				case "A":
-			    					messages.add(new MessageProtocol(2, "C2C", 'A', time, this.getID(), msgReceived.getDetails()));
-			    					break;
-			    				case "F":
-			    					messages.add(new MessageProtocol(2, "C2C", 'F', time, this.getID(), msgReceived.getDetails()));
-			    					break;
-			    				case "P":
-			    					messages.add(new MessageProtocol(2, "C2C", 'A', time, this.getID(), msgReceived.getDetails()));
-			    					break;
-			    			}
+		        		
+		        		// System.out.println("+++++(FS) -> Recebi mensagem de código " + msgReceived.getCode());
+			    		
+		        		if (msgReceived.getCode() == 2) {
+		        			System.out.println("details-> " + msgReceived.getDetails());
+			    			String[] splitedDetails = msgReceived.getDetails().split(", ");
+			    			String centralDestination = splitedDetails[2];
+			    			messages.add(new DummyProtocol(2, "C2C", 'F', time, this.getID(), 
+	    							3, (centralDestination + " " + splitedDetails[3] + " " + splitedDetails[4])));
+	    					break;
 			    		}
+		        		msgSplited = null;
 		        		break;
 		        	case CENTRAL:
-		        		msgReceived = new MessageProtocol(channelMsgReceived, msgSplited[0],
+		        		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
 			        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-			        			new EntityID(Integer.parseInt(msgSplited[3])), 
+			        			new EntityID(Integer.parseInt(msgSplited[3])), 3,
 			        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
 		        		System.out.println("(FS) Recebi a mensagem código " + msgReceived.getCode() + " de uma central");
+		        		msgSplited = null;
 		        		break;
 		        	case NOTHING:
+		        		msgSplited = null;
 		        		break;
 		        }
         	}
@@ -118,7 +120,10 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
         	}
         	else if (channelMsgReceived == 2) {
         		if (messageSplited[0].equals("C2C")) {
-        			result = Who.CENTRAL;
+        			System.out.println(Arrays.toString(messageSplited));
+        			if (new EntityID(Integer.parseInt(messageSplited[3])) != this.getID())
+        				if(messageSplited[5].equals("F"))
+        					result = Who.CENTRAL;
 		        }
         	}
         }

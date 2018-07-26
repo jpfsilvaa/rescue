@@ -6,28 +6,32 @@ Agentes -> Central ---------> Canal 1
 (Cada tipo de agente com seu respectivo tipo de central)
 Códigos:
 0 -> Somente estado de mundo
-1 -> Evento de resgate do tipo que posso resolver
+1 -> Evento de resgate do tipo que posso resolver (Que também seria um estado de mundo)
 2 -> Evento de resgate que só um agente de outro tipo pode resolver
 
 Mensagem:
 No caso código 0:
-"A2C A||F||P 'time' meu_entityID código entityID_meu_local 'state'"
+"A2C A||F||P time meu_entityID código entityID_meu_local 'state'"
 
 No caso código 1:
-"A2C A||F||P 'time' meu_entityID código entityID_meu_local entityID_evento fieryness||buriedness||area(ou até mais detalhes)" // Como se fosse um "estado de mundo" também, pois o agente não precisará da "autorização do centro" pra resolver essa tarefa, mas o centro pode retirar o agente desta tarefa se necessário.
+"A2C A||F||P time meu_entityID código entityID_meu_local entityID_evento fieryness||buriedness||area(2 detalhes!!)" 
+// Como se fosse um "estado de mundo" também, pois o agente não precisará da "autorização do centro" pra resolver essa tarefa, mas o centro pode retirar o agente desta tarefa se necessário.
 
 No caso código 2:
-"A2C A||F||P 'time' meu_entityID código entityID_meu_local entityID_evento A||F||P(Tipo de agente que pode resolver esse evento) fieryness||buriedness||area(ou até mais detalhes)"
+"A2C A||F||P time meu_entityID código entityID_meu_local entityID_evento A||F||P(agente que pode resolver esse evento) fieryness||buriedness||area(2 detalhes!!)"
 
 --------------------------
 
 Central -> Central ---------> Canal 2
 (No caso de um agente perceber um evento que nao pode resolver, a central comunica a central resposável pelo evento)
-"C2C A||F||P(destino) 'time' meu_entityID entityID_evento entityID_local_do_Agente_que_avistou_evento"
-S
+"C2C A||F||P time meu_entityID código(3) A||F||P(destino) entityID_evento entityID_local_do_Agente_que_avistou_evento"
+
 --------------------------
 
 Central -> Agente  ---------> Canal 1
 (Para enviar comandos a determinado agente)
-"C2A A||F||P 'time' entityID_agente_destinatário entityID_evento entityID_local_evento"
+"C2A A||F||P time meu_entityID código(4) entityID_agente_destinatário entityID_evento entityID_local_evento"
 
+--------------------------
+Mensagem de confirmação
+"A2C||C2C||C2A A||F||P time meu_entityID código(5) destiny 'RECEIVED'"

@@ -9,16 +9,15 @@ public class MessageConfirmation extends AbstractMessageProtocol{
 	private EntityID destiny;
 	
 	public MessageConfirmation(int channel, String type, char agentChar, int time, 
-			EntityID myID, int code, EntityID destiny) {
-		super(channel, type, agentChar, time, myID, code, (destiny + " RECEIVED"));
-		this.destiny = destiny;
+			EntityID myID, int code, String details) {
+		super(channel, type, agentChar, time, myID, code, (details + " RECEIVED"));
+		this.destiny = new EntityID(Integer.parseInt(details));
 	}
 	
 	public EntityID getDestiny() {
 		return destiny;
 	}
 	
-	// TODO -> Testar o funcionamento desse método
 	public static boolean hasConfirmationToSend(ArrayList<AbstractMessageProtocol> messages) {
 		boolean hasConfirmationMsg = false;
 

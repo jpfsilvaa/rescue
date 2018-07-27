@@ -11,6 +11,7 @@ import org.jfree.util.Rotation;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
+import communication.MessageConfirmation;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.messages.MessageComponent;
@@ -46,6 +47,8 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 	private static final String DISTANCE_KEY = "clear.repair.distance";
 	private PoliceForce me;
 	private EntityID currentBlockade;
+	private boolean recipientHasReceived = false;
+	private int channelMsgReceived = 0; 
 	
     @Override
     protected void postConnect() {
@@ -118,12 +121,35 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
         for (Command next : heard) {
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
+        	channelMsgReceived = msg.getChannel();
         	byte[] msgRaw = msg.getContent();
-        	// msgFinal = new String (msgRaw);
-        	// msgSplited = msgFinal.split(" ");
+        	msgFinal.add(new String (msgRaw));
         }
-        
-     // TODO -> TRATAR O ArrayList msgFinal e testar a confirmação de mensagem
+
+        for (String msgReceived : msgFinal) {
+	        String[] msgSplited = msgReceived.split(" ");
+        	if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {
+	        		
+	        		int code = Integer.parseInt(msgSplited[4]);
+	        		switch(code) {
+	        			case 4: // Comando de uma central para o agente
+	        				break;
+	        			case 5: // Confirmação de mensagem
+	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
+	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
+	        						msgSplited[5]);
+	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
+	        					recipientHasReceived = true;
+	        				}
+	        				msgSplited = null;
+	        				break;
+	        		}
+	        		
+	        	}
+	        }
+        }
 	}
 
 	/**
@@ -192,15 +218,23 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		msgFinal.clear();
+		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 0, time 
-					+ " " + me.getPosition().toString() + " " + state)); // Código 0 ao Centro
+			messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 
+					0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
+		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
 		if (messages.size() > 0) {
-			// System.out.println("ENVIANDO CÓDIGO " + messages.get(0).getCode());
-			// sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
-			messages.remove(0);
+			// TODO -> Fazer confirmação quando receber da central quando a comunicação estiver pronta mesmo (com estrategia e tal...)
+			if (!recipientHasReceived) {
+				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			}
+			else {
+				recipientHasReceived  = false;
+				messages.remove(0);
+			}
 		}
 		
 		heardMessage(time, heard);

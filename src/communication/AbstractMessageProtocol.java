@@ -27,10 +27,6 @@ public abstract class AbstractMessageProtocol {
 	private char agentChar;
 	private int time;
 
-	// TODO -> Fazer essa classe MessageProtocol ser abstract, assim continuo com a
-	// lista no abstractAgent, mas cada
-	// agente pode preencher essa lista com um objeto que é subclasse dessa aqui
-
 	// Construtor para mensagem de um agente para central
 	public AbstractMessageProtocol(int channel, String type, char agentChar, int time, EntityID senderID, int code,
 			String details) {

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
+import communication.MessageConfirmation;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.components.StandardAgent;
@@ -34,7 +35,9 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
     private static final String MAX_POWER_KEY = "fire.extinguish.max-sum";
     private int maxWater;
     private int maxPower;
-	private FireBrigade me;	
+	private FireBrigade me;
+	private boolean recipientHasReceived = false;
+	private int channelMsgReceived = 0;
 	private enum State 
 	{
 		READY,
@@ -75,8 +78,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					Human civilian = (Human) model.getEntity(changed);
 					if (!civiliansPerceived.contains(changed.getValue())) {
 						if (civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
-							System.out.println("PERCEBI CIVIL!!!!!!!-B");
-							messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+							messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
 									(me.getPosition() + " " + civilian.getID() +
 									" A " + civilian.getBuriedness() + " " +
 									civilian.getHP())));
@@ -130,13 +132,35 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
         for (Command next : heard) {
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
-        	//System.out.println("URN-->" + msg.getURN());
+        	channelMsgReceived = msg.getChannel();
         	byte[] msgRaw = msg.getContent();
-        	// msgFinal = new String (msgRaw);
-        	// msgSplited = msgFinal.split(" ");
+        	msgFinal.add(new String (msgRaw));
         }
 
-     // TODO -> TRATAR O ArrayList msgFinal e testar a confirmação de mensagem
+        for (String msgReceived : msgFinal) {
+	        String[] msgSplited = msgReceived.split(" ");
+        	if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {
+	        		
+	        		int code = Integer.parseInt(msgSplited[4]);
+	        		switch(code) {
+	        			case 4: // Comando de uma central para o agente
+	        				break;
+	        			case 5: // Confirmação de mensagem
+	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
+	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
+	        						msgSplited[5]);
+	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
+	        					recipientHasReceived = true;
+	        				}
+	        				msgSplited = null;
+	        				break;
+	        		}
+	        		
+	        	}
+	        }
+        }
         
 	}
 	
@@ -234,16 +258,23 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		msgFinal.clear();
+		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 0, time +
-					" " + me.getPosition().toString() + " " + state)); // Código 0 ao Centro
-
-		// MessageProtocol m = MessageProtocol.setFirstMessagesOnQueue(messages); // PEGA A PRIMEIRA MENSAGEM POR PRIORIDADE E RETORNA AO OBJETO m
+			messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 
+					0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
+		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
+		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
 		if (messages.size() > 0) {
-			// System.out.println("----(F)ENVIANDO CÓDIGO " + messages.get(0).getCode());
-			// sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
-			messages.remove(0);
+			// TODO -> Fazer confirmação quando receber da central quando a comunicação estiver pronta mesmo (com estrategia e tal...)
+			if (!recipientHasReceived) {
+				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			}
+			else {
+				recipientHasReceived  = false;
+				messages.remove(0);
+			}
 		}
 		
 		heardMessage(time, heard);
@@ -256,7 +287,6 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 
 	private void setGoal(StandardEntityURN urn, HashMap<StandardEntityURN, List<EntityID>> hm, State s) {
 		goal = hm.get(urn).get(rnd.nextInt(hm.get(urn).size()));
-		//System.out.println("FOUND A NEW GOAL AT " + goal.getValue());
 		state = s;
 	}
 

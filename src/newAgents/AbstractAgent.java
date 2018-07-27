@@ -18,8 +18,9 @@ import sample.SampleSearch;
 
 public abstract class AbstractAgent<E extends StandardEntity> extends StandardAgent<E> {
 	
-	protected String[] msgSplited;
 	protected ArrayList<String> msgFinal = new ArrayList<>();
+	protected AbstractMessageProtocol msgReceived;
+	
 	protected Random rnd;
 	protected SampleSearch search;
 	protected EntityID goal;
@@ -27,7 +28,6 @@ public abstract class AbstractAgent<E extends StandardEntity> extends StandardAg
 	protected List<Integer> blockadesPerceived = new ArrayList<>(); // amb e bomb
 	protected List<Integer> civiliansPerceived = new ArrayList<>(); // bomb e pol
 	protected List<Integer> buildingsInFirePerceived = new ArrayList<>(); // amb e pol
-	protected AbstractMessageProtocol msgReceived;
 	protected MessageConfirmation confirmation;
 	public enum Who{
 		AGENT,

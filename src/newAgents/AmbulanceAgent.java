@@ -70,7 +70,9 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		for(EntityID changed : perceptions.getChangedEntities()) {
 			switch(model.getEntity(changed).getStandardURN()) {
 				case CIVILIAN:
-					possibleRescue_civilian.add(changed);
+					Human c = (Human) model.getEntity(changed);
+					if (!getRefuges().contains(c.getPosition(model)))
+						possibleRescue_civilian.add(changed);
 				break;
 				case ROAD:
 					if(myPosition.getValue() != changed.getValue())
@@ -293,7 +295,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		}
 		
 		if(someoneOnBoard() && location() instanceof Refuge) {
-			System.out.println("+AINDA TEM CIVIL NA AMB");
+			System.out.println("(A) UNLOADING");
 			sendUnload(time);
 		}
 		

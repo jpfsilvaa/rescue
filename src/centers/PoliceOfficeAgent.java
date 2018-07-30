@@ -48,11 +48,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	        	if (msgSplited.length > 1) {		        
 			        switch(messageFrom(channelMsgReceived, msgSplited)) {
 				    	case AGENT:
-				    		// TODO -> Fazer um construtor no AbstractMessage, ou um metodo estatico mesmo, que recebe só esse msgSPlitted, e dentro desse metodo ele é tratado e não preciso passar essa bagunça...
-				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
-				        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-				        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
-				        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
+				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited);
 				    		
 				    		if (msgReceived.getCode() == 2) {
 				    			String[] splitedDetails = msgReceived.getDetails().split(", ");
@@ -68,10 +64,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case CENTRAL:
-				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
-				        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-				        			new EntityID(Integer.parseInt(msgSplited[3])), 3,
-				        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
+				    		msgReceived = new DummyProtocol(channelMsgReceived, 3, msgSplited);
 				    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
 				    		msgSplited = null;
 				    		
@@ -151,7 +144,4 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
         return result;
 	}
 	
-	protected static<T> T[] subArray(T[] array, int begin, int end) { 
-		return Arrays.copyOfRange(array, begin, end);
-	}
 }

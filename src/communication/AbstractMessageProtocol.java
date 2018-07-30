@@ -1,9 +1,10 @@
 package communication;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-
+import newAgents.AbstractAgent;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
@@ -38,7 +39,29 @@ public abstract class AbstractMessageProtocol {
 		this.code = code;
 		this.details = details;
 	}
-
+	
+	// Construtor para recebimento de mensagens
+	public AbstractMessageProtocol(int channel, String[] msgReceived) {
+		this.channel = channel;
+		this.type = msgReceived[0];
+		this.agentChar = msgReceived[1].charAt(0);
+		this.time = Integer.parseInt(msgReceived[2]);
+		this.senderID = new EntityID(Integer.parseInt(msgReceived[3]));
+		this.code = Integer.parseInt(msgReceived[4]);
+		this.details = Arrays.toString(AbstractAgent.subArray(msgReceived, 5, msgReceived.length));
+	}
+	
+	// Construtor para mensagem de uma central para outra central
+	public AbstractMessageProtocol(int channel, int code, String[] msgReceived) {
+		this.channel = channel;
+		this.type = msgReceived[0];
+		this.agentChar = msgReceived[1].charAt(0);
+		this.time = Integer.parseInt(msgReceived[2]);
+		this.senderID = new EntityID(Integer.parseInt(msgReceived[3]));
+		this.code = 3;
+		this.details = Arrays.toString(AbstractAgent.subArray(msgReceived, 4, msgReceived.length));
+	}
+	
 	// C2C A||F||P 'time' entityID_central_destinataria entityID_evento
 	// entityID_local_do_Agente_que_avistou_evento
 	// Costrutor para mensagem de uma central para -> uma central para -> outra

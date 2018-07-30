@@ -1,6 +1,7 @@
 package newAgents;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -42,5 +43,9 @@ public abstract class AbstractAgent<E extends StandardEntity> extends StandardAg
 	protected abstract void deliberate(HashMap <StandardEntityURN, List <EntityID>> possibleGoals);
 	
 	protected abstract void act(int time);
+	
+	public static<T> T[] subArray(T[] array, int begin, int end) { 
+		return Arrays.copyOfRange(array, begin, end);
+	}
 	
 }

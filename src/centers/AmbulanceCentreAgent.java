@@ -67,10 +67,7 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'A', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case CENTRAL:
-				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
-				        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-				        			new EntityID(Integer.parseInt(msgSplited[3])), 3,
-				        			Arrays.toString(subArray(msgSplited, 4, msgSplited.length)));
+				    		msgReceived = new DummyProtocol(channelMsgReceived, 3, msgSplited);
 				    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
 				    		msgSplited = null;
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
@@ -145,8 +142,5 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
         
         return result;
 	}
-	
-	protected static<T> T[] subArray(T[] array, int begin, int end) { 
-		return Arrays.copyOfRange(array, begin, end);
-	}
+
 }

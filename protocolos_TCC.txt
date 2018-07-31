@@ -11,14 +11,14 @@ Códigos:
 
 Mensagem:
 No caso código 0:
-"A2C A||F||P time meu_entityID código entityID_meu_local 'state'"
+"A2C A||F||P time meu_entityID código state entityID_meu_local"
 
 No caso código 1:
-"A2C A||F||P time meu_entityID código entityID_meu_local entityID_evento fieryness||buriedness||area(2 detalhes!!)" 
+"A2C A||F||P time meu_entityID código state entityID_meu_local entityID_evento fieryness||buriedness||area(2 detalhes!!)" 
 // Como se fosse um "estado de mundo" também, pois o agente não precisará da "autorização do centro" pra resolver essa tarefa, mas o centro pode retirar o agente desta tarefa se necessário.
 
 No caso código 2:
-"A2C A||F||P time meu_entityID código entityID_meu_local entityID_evento A||F||P(agente que pode resolver esse evento) fieryness||buriedness||area(2 detalhes!!)"
+"A2C A||F||P time meu_entityID código state entityID_meu_local entityID_evento A||F||P(agente que pode resolver esse evento) fieryness||buriedness||area(2 detalhes!!)"
 
 --------------------------
 

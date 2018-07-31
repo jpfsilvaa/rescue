@@ -2,65 +2,96 @@ package communication;
 
 import rescuecore2.worldmodel.EntityID;
 
-public class A2C_Protocol extends AbstractMessageProtocol{
+public class FireAgentToCentral_Protocol extends AbstractMessageProtocol{
 
 	private String state;
-	private int detail_1;
-	private int detail_2;
+	private int totalArea;
+	private int fieryness;
+	private int detailCodeTwo_1;
+	private int detailCodeTwo_2;
 	private EntityID senderPosition;
 	private EntityID eventID;
 	private char centerDestiny;
 	
-	public A2C_Protocol(int channel, String type, char agentChar, int time, 
+	public FireAgentToCentral_Protocol(int channel, String type, char agentChar, int time, 
 			EntityID senderID, int code, String details) {
 		super(channel, type, agentChar, time, senderID, code, details);
 		
-		// TODO -> Se for usar essa subclasse do MEssagePRotocol, testa assim primeiro, depois, se tiver tempo, faz essa clase virar abstrata e cria subclasses por código que herdam essa classe aqui
 		String[] splitedDetails = details.split(" ");;
 		switch(code) {
 			case 0:
-				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[0]));
-				this.state = splitedDetails[1];
+				this.state = splitedDetails[0];
+				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
 				break;
 			case 1:
-				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[0]));
-				this.eventID = new EntityID(Integer.parseInt(splitedDetails[1]));
-				this.detail_1 = Integer.parseInt(splitedDetails[2]);
-				this.detail_1 = Integer.parseInt(splitedDetails[3]);
+				this.state = splitedDetails[0];
+				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
+				this.eventID = new EntityID(Integer.parseInt(splitedDetails[2]));
+				this.totalArea = Integer.parseInt(splitedDetails[3]);
+				this.fieryness = Integer.parseInt(splitedDetails[4]);
 				break;
 			case 2:
-				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[0]));
-				this.eventID = new EntityID(Integer.parseInt(splitedDetails[1]));
-				this.centerDestiny = splitedDetails[2].charAt(0);
-				this.detail_1 = Integer.parseInt(splitedDetails[3]);
-				this.detail_1 = Integer.parseInt(splitedDetails[4]);
-			
+				this.state = splitedDetails[0];
+				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
+				this.eventID = new EntityID(Integer.parseInt(splitedDetails[2]));
+				this.centerDestiny = splitedDetails[3].charAt(0);
+				this.detailCodeTwo_1 = Integer.parseInt(splitedDetails[4]);
+				this.detailCodeTwo_2 = Integer.parseInt(splitedDetails[5]);
+				break;
 		}
-		
+	}
+	
+	public FireAgentToCentral_Protocol(int channel, String[] msgReceived) {
+		super(channel, msgReceived); 
+		switch(super.getCode()) {
+		case 0:
+			this.state = msgReceived[5];
+			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
+			break;
+		case 1:
+			this.state = msgReceived[5];
+			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
+			this.eventID = new EntityID(Integer.parseInt(msgReceived[7]));
+			this.totalArea = Integer.parseInt(msgReceived[8]);
+			this.fieryness = Integer.parseInt(msgReceived[9]);
+			break;
+		case 2:
+			this.state = msgReceived[5];
+			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
+			this.eventID = new EntityID(Integer.parseInt(msgReceived[7]));
+			this.centerDestiny = msgReceived[7].charAt(0);
+			this.detailCodeTwo_1 = Integer.parseInt(msgReceived[8]);
+			this.detailCodeTwo_2 = Integer.parseInt(msgReceived[9]);
+			break;
+		}
 	}
 
-	private String getState() {
+	public String getState() {
 		return state;
 	}
 
-	private int getDetail_1() {
-		return detail_1;
-	}
-
-	private int getDetail_2() {
-		return detail_2;
-	}
-
-	private EntityID getSenderPosition() {
+	public EntityID getSenderPosition() {
 		return senderPosition;
 	}
 
-	private EntityID getEventID() {
-		return eventID;
+	public char getCenterDestiny() {
+		return centerDestiny;
+	}
+	
+	public int getTotalArea() {
+		return totalArea;
 	}
 
-	private char getCenterDestiny() {
-		return centerDestiny;
+	public int getFieryness() {
+		return fieryness;
+	}
+
+	public int getDetailCodeTwo_1() {
+		return detailCodeTwo_1;
+	}
+
+	public int getDetailCodeTwo_2() {
+		return detailCodeTwo_2;
 	}
 	
 }

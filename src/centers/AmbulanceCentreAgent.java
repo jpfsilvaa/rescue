@@ -49,19 +49,15 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 	        	if (msgSplited.length > 1) {		        
 			        switch(messageFrom(channelMsgReceived, msgSplited)) {
 				    	case AGENT:
-				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited[0],
-				        			msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-				        			new EntityID(Integer.parseInt(msgSplited[3])), Integer.parseInt(msgSplited[4]),
-				        			Arrays.toString(subArray(msgSplited, 5, msgSplited.length)));
+				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited);
 				    		
 				    		if (msgReceived.getCode() == 2) {
 				    			String[] splitedDetails = msgReceived.getDetails().split(", ");
-				    			String centralDestination = splitedDetails[2];
+				    			String centralDestination = splitedDetails[3];
 				    			messages.add(new DummyProtocol(2, "C2C", 'A', time, this.getID(), 
-		    							3, (centralDestination + " " + splitedDetails[3] + " " + splitedDetails[4])));
+		    							3, (centralDestination + " " + splitedDetails[4] + " " + splitedDetails[5])));
 				    		}
 				    		
-				    		// TODO -> (AQUI E NAS OUTRAS CENTRAIS) Tratar os dados recebidos de código 0
 				    		msgSplited = null;
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
 					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'A', time, this.getID(), 5, msgReceived.getSenderID().toString()));

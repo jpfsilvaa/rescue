@@ -83,8 +83,8 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
 						if (!buildingsInFirePerceived.contains(changed.getValue())) {
 							messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
-								(me.getPosition() + " " + buildingPerceived.getID() + 
-								" F " + buildingPerceived.getFieryness() + " " + buildingPerceived.getFloors())));
+								(state + " " + me.getPosition() + " " + buildingPerceived.getID() + 
+								" F " + buildingPerceived.getTotalArea() + " " + buildingPerceived.getFieryness())));
 						}
 						buildingsInFirePerceived.add(changed.getValue());
 					}						
@@ -117,7 +117,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
 						// System.out.println("last" + Arrays.toString(b.getApexes()));
 						messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
-								(me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
+								(state + " " + me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
 					}
 					break;
 			}			
@@ -240,7 +240,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 						System.out.println("CÓDIGO 1 - " + goal);
 						messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 1, 
-									(me.getPosition() + " " + civilian.getID() +
+									(state + " " + me.getPosition() + " " + civilian.getID() +
 										" " + civilian.getBuriedness() + " " + civilian.getHP())));
 					}
 					civiliansPerceived.add(goal.getValue());
@@ -279,7 +279,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
 			messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 
-					0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
+					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
@@ -336,16 +336,20 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 			Human c = (Human) model.getEntity(goal);
 			if(!(model.getEntity(c.getPosition()) instanceof Refuge))
 				path = search.breadthFirstSearch(me.getPosition(),c.getPosition());
-			else
+			else {
 				state = State.READY;
+				return;
+			}
 			
 			if(me.getPosition().getValue() == c.getPosition().getValue()) {
 				state = nxtState;
 				return;
 			}
 			else {
-				if(path.size() >= 1) {
-					sendMove(time, path);
+				if(path != null) {
+					if (path.size() >= 1) {
+						sendMove(time, path);
+					}
 				}
 				else {
 					state = State.READY;

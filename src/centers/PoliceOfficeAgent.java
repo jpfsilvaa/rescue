@@ -52,12 +52,11 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				    		
 				    		if (msgReceived.getCode() == 2) {
 				    			String[] splitedDetails = msgReceived.getDetails().split(", ");
-				    			String centralDestination = splitedDetails[2];
+				    			String centralDestination = splitedDetails[3];
 				    			messages.add(new DummyProtocol(2, "C2C", 'P', time, this.getID(), 
-		    							3, (centralDestination + " " + splitedDetails[3] + " " + splitedDetails[4])));
+		    							3, (centralDestination + " " + splitedDetails[4] + " " + splitedDetails[5])));
 				    		}
 				    		
-				    		// TODO -> (AQUI E NAS OUTRAS CENTRAIS) Tratar os dados recebidos de código 0 e 1
 				    		msgSplited = null;
 				    		
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA

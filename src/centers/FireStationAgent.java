@@ -8,6 +8,7 @@ import java.util.List;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
+import communication.FireAgentToCentral_Protocol;
 import communication.MessageConfirmation;
 import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
@@ -49,16 +50,21 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 			        switch(messageFrom(channelMsgReceived, msgSplited)) {
 				    	case AGENT:
 				    		// TODO -> CASO RECEBER UM CÓDIGO 1, ANALISAR A GRAVIDADE DO INCENDIO E, DEPENDENDO, REQUISITAR MAIS BOMBEIROS PARA ESTE INCENDIO.
-				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited);
+				    		msgReceived = new FireAgentToCentral_Protocol(channelMsgReceived, msgSplited);
+				    		String[] splitedDetails = msgReceived.getDetails().split(", ");
 				    		
 				    		if (msgReceived.getCode() == 2) {
-				    			String[] splitedDetails = msgReceived.getDetails().split(", ");
 				    			String centralDestination = splitedDetails[2];
 				    			messages.add(new DummyProtocol(2, "C2C", 'F', time, this.getID(), 
-		    							3, (centralDestination + " " + splitedDetails[3] + " " + splitedDetails[4])));
+		    							3, (centralDestination + " " + splitedDetails[4] + " " + splitedDetails[5])));
+				    		}
+				    		else if (msgReceived.getCode() == 1) {
+				    			if (Integer.parseInt(splitedDetails[3]) >= 250) {
+				    				// Area maior que 250 -> ENVIAR PROTOCOLO DE PEDIDO DE AJUDA AOS OUTROS BOMBEIROS
+				    				
+				    			}
 				    		}
 				    		
-				    		// TODO -> (AQUI E NAS OUTRAS CENTRAIS) Tratar os dados recebidos de código 0 e 1
 				    		msgSplited = null;
 				    		
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA

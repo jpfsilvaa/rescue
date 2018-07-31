@@ -79,7 +79,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					if (!civiliansPerceived.contains(changed.getValue())) {
 						if (civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
-									(me.getPosition() + " " + civilian.getID() +
+									(state + " " + me.getPosition() + " " + civilian.getID() +
 									" A " + civilian.getBuriedness() + " " +
 									civilian.getHP())));
 						}
@@ -111,7 +111,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
 						// System.out.println("last" + Arrays.toString(b.getApexes()));
 						messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
-								(me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
+								(state + " " + me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
 					}
 					break;
 			}
@@ -191,13 +191,11 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 				Building buildingGoal = (Building) model.getEntity(goal);
 				if (!buildingsInFirePerceived.contains(goal.getValue())) {
 					messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 1, 
-							(me.getPosition() + " " + buildingGoal.getID() + " " +
-							buildingGoal.getFloors() + " " + buildingGoal.getFieryness())));
+							(state + " " + me.getPosition() + " " + buildingGoal.getID() + " " +
+							buildingGoal.getTotalArea() + " " + buildingGoal.getFieryness())));
 					buildingsInFirePerceived.add(goal.getValue());
 				}
-				//System.out.println("\tEXTINGUISHING!");
-				//System.out.println("TANK: " + me.getWater());
-				//System.out.println("BUILDING FIERYNESS: "+ buildingGoal.getFieryness());
+
 				sendExtinguish(time, goal, maxPower);
 				if(buildingGoal.getFieryness() >= 4)
 					state = State.READY;
@@ -262,7 +260,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
 			messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 
-					0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
+					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens

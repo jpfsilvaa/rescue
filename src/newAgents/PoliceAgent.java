@@ -84,7 +84,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							// System.out.println("PERCEBI CIVIL!!!!");
 							messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
-									(me.getPosition() + " " + civilian.getID() + " A " + civilian.getBuriedness() 
+									(state + " " + me.getPosition() + " " + civilian.getID() + " A " + civilian.getBuriedness() 
 									+ " " + civilian.getHP())));
 						}
 						civiliansPerceived.add(changed.getValue());
@@ -98,8 +98,8 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					if (!buildingsInFirePerceived.contains(changed.getValue())) {
 						if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
 							messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
-									(me.getPosition() + " " + buildingPerceived.getID() + " F " 
-									+ buildingPerceived.getFieryness() +" " + buildingPerceived.getFloors())));
+									(state + " " + me.getPosition() + " " + buildingPerceived.getID() + " F " 
+									+ buildingPerceived.getTotalArea() +" " + buildingPerceived.getFieryness())));
 						}
 						buildingsInFirePerceived.add(changed.getValue());
 					}
@@ -194,7 +194,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 				else {
 					final Blockade currBlock = (Blockade) model.getEntity(currentBlockade);
 					messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 1, 
-							(me.getPosition() + " " + currBlock.getID() + " " 
+							(state + " " + me.getPosition() + " " + currBlock.getID() + " " 
 							+ currBlock.getRepairCost() + " " + currBlock.getPosition())));
 					sendClear(time, currentBlockade);
 					currentBlockade = null;
@@ -222,7 +222,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
 			messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 
-					0, me.getPosition().toString() + " " + state)); // Código 0 ao Centro
+					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens

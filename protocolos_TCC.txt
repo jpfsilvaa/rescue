@@ -34,4 +34,8 @@ Central -> Agente  ---------> Canal 1
 
 --------------------------
 Mensagem de confirmação
-"A2C||C2C||C2A A||F||P time meu_entityID código(5) destiny 'RECEIVED'"
+"A2C||C2C||C2A A||F||P time meu_entityID código(5) entityID_Agente_destinatário 'RECEIVED'"
+
+--------------------------
+Protocolo de ajuda
+"C2A A||F||P time meu_entityID código(6) entityID_Agente_destinatário entityID_local_ajuda"

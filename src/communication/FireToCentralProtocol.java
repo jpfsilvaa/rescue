@@ -2,7 +2,7 @@ package communication;
 
 import rescuecore2.worldmodel.EntityID;
 
-public class FireAgentToCentral_Protocol extends AbstractMessageProtocol{
+public class FireToCentralProtocol extends AbstractMessageProtocol{
 
 	private String state;
 	private int totalArea;
@@ -13,7 +13,7 @@ public class FireAgentToCentral_Protocol extends AbstractMessageProtocol{
 	private EntityID eventID;
 	private char centerDestiny;
 	
-	public FireAgentToCentral_Protocol(int channel, String type, char agentChar, int time, 
+	public FireToCentralProtocol(int channel, String type, char agentChar, int time, 
 			EntityID senderID, int code, String details) {
 		super(channel, type, agentChar, time, senderID, code, details);
 		
@@ -41,7 +41,7 @@ public class FireAgentToCentral_Protocol extends AbstractMessageProtocol{
 		}
 	}
 	
-	public FireAgentToCentral_Protocol(int channel, String[] msgReceived) {
+	public FireToCentralProtocol(int channel, String[] msgReceived) {
 		super(channel, msgReceived); 
 		switch(super.getCode()) {
 		case 0:
@@ -59,9 +59,9 @@ public class FireAgentToCentral_Protocol extends AbstractMessageProtocol{
 			this.state = msgReceived[5];
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
 			this.eventID = new EntityID(Integer.parseInt(msgReceived[7]));
-			this.centerDestiny = msgReceived[7].charAt(0);
-			this.detailCodeTwo_1 = Integer.parseInt(msgReceived[8]);
-			this.detailCodeTwo_2 = Integer.parseInt(msgReceived[9]);
+			this.centerDestiny = msgReceived[8].charAt(0);
+			this.detailCodeTwo_1 = Integer.parseInt(msgReceived[9]);
+			this.detailCodeTwo_2 = Integer.parseInt(msgReceived[10]);
 			break;
 		}
 	}
@@ -92,6 +92,10 @@ public class FireAgentToCentral_Protocol extends AbstractMessageProtocol{
 
 	public int getDetailCodeTwo_2() {
 		return detailCodeTwo_2;
+	}
+	
+	public EntityID getEventID() {
+		return this.eventID;
 	}
 	
 }

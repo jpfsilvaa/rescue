@@ -28,7 +28,7 @@ public class MessageConfirmation extends AbstractMessageProtocol{
 		return hasConfirmationMsg;
 	}
 	
-	public static MessageConfirmation getConfirmation(ArrayList<AbstractMessageProtocol> messages) {
+	public static MessageConfirmation getConfirmationMsgFromList(ArrayList<AbstractMessageProtocol> messages) {
 		MessageConfirmation result = null;
 		for (AbstractMessageProtocol mp : messages)
 			if (mp instanceof MessageConfirmation)

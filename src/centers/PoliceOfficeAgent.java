@@ -101,7 +101,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 		
 		if (messages.size() > 0) {
 			if (MessageConfirmation.hasConfirmationToSend(messages)) {
-				MessageConfirmation mc = MessageConfirmation.getConfirmation(messages);
+				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
 				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
 				messages.remove(mc);
 			}

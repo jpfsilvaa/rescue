@@ -83,7 +83,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					if (!civiliansPerceived.contains(changed.getValue())) { 
 						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
 							// System.out.println("PERCEBI CIVIL!!!!");
-							messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+							messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 2, 
 									(state + " " + me.getPosition() + " " + civilian.getID() + " A " + civilian.getBuriedness() 
 									+ " " + civilian.getHP())));
 						}
@@ -97,7 +97,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					Building buildingPerceived = (Building) model.getEntity(changed);
 					if (!buildingsInFirePerceived.contains(changed.getValue())) {
 						if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
-							messages.add(new DummyProtocol(1, "A2C", 'A', time, me.getID(), 2, 
+							messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 2, 
 									(state + " " + me.getPosition() + " " + buildingPerceived.getID() + " F " 
 									+ buildingPerceived.getTotalArea() +" " + buildingPerceived.getFieryness())));
 						}

@@ -5,10 +5,12 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
-import communication.FireAgentToCentral_Protocol;
+import communication.FireToCentralProtocol;
+import communication.HelpProtocol;
 import communication.MessageConfirmation;
 import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
@@ -21,6 +23,8 @@ import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.worldmodel.EntityID;
 
 public class FireStationAgent extends AbstractAgent<FireStation> {
+	
+	private HashMap<EntityID, String> agentsState = new HashMap<>();
 	
 	@Override
 	protected HashMap<StandardEntityURN, List<EntityID>> percept(int time, ChangeSet perceptions) {
@@ -48,27 +52,26 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 	        if (msgSplited != null) {
 	        	if (msgSplited.length > 1) {		        
 			        switch(messageFrom(channelMsgReceived, msgSplited)) {
-				    	case AGENT:
-				    		// TODO -> CASO RECEBER UM CÓDIGO 1, ANALISAR A GRAVIDADE DO INCENDIO E, DEPENDENDO, REQUISITAR MAIS BOMBEIROS PARA ESTE INCENDIO.
-				    		msgReceived = new FireAgentToCentral_Protocol(channelMsgReceived, msgSplited);
-				    		String[] splitedDetails = msgReceived.getDetails().split(", ");
+				    	case AGENT:				    		
+				    		msgReceived = new FireToCentralProtocol(channelMsgReceived, msgSplited);
+				    		FireToCentralProtocol fMsgReceived = (FireToCentralProtocol) msgReceived;
+				    		
+				    		updateAgentsState(fMsgReceived);
 				    		
 				    		if (msgReceived.getCode() == 2) {
-				    			String centralDestination = splitedDetails[2];
 				    			messages.add(new DummyProtocol(2, "C2C", 'F', time, this.getID(), 
-		    							3, (centralDestination + " " + splitedDetails[4] + " " + splitedDetails[5])));
+		    							3, (fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getDetailCodeTwo_1() + " " + fMsgReceived.getDetailCodeTwo_2())));
 				    		}
 				    		else if (msgReceived.getCode() == 1) {
-				    			if (Integer.parseInt(splitedDetails[3]) >= 250) {
-				    				// Area maior que 250 -> ENVIAR PROTOCOLO DE PEDIDO DE AJUDA AOS OUTROS BOMBEIROS
-				    				
+				    			if(fMsgReceived.getTotalArea() > 50 && fMsgReceived.getFieryness() < 3) {
+				    				getHelp(time, fMsgReceived);
 				    			}
 				    		}
 				    		
 				    		msgSplited = null;
 				    		
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'F', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'F', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case CENTRAL:
 				    		msgReceived = new DummyProtocol(channelMsgReceived, 3, msgSplited);
@@ -103,11 +106,16 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 		msgFinal.clear();
 		heardMessage(time, heard);
 		
-		// TODO -> Fazer com que a central receba e reconheça a confirmação de uma mensagem que ela recebeu também.
+		System.out.println(agentsState.toString());
 		
 		if (messages.size() > 0) {
+			if (HelpProtocol.hasHelpMsgToSend(messages)) {
+				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
+				sendSpeak(time, hp.getChannel(), hp.getEntireMessage().getBytes());
+				messages.remove(hp);
+			}
 			if (MessageConfirmation.hasConfirmationToSend(messages)) {
-				MessageConfirmation mc = MessageConfirmation.getConfirmation(messages);
+				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
 				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
 				messages.remove(mc);
 			}
@@ -148,4 +156,30 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
         return result;
 	}
     
+	/**
+	 * Adiciona o state de cada agente a um hashMap pra central 
+	 * saber quem está disponível caso necessite enviar ajuda
+	 * a algum outro bombeiro.
+	 */
+	private void updateAgentsState(FireToCentralProtocol fMsgReceived) {
+		agentsState.put(fMsgReceived.getSenderID(), fMsgReceived.getState());
+	}
+	
+	/**
+	 * Método que verifica no hashMap de estados dos agentes 
+	 * bombeiros para definir a quem será solicitada ajuda, 
+	 * e assim defini um HelpProtocol a ser enviado.
+	 */
+	private void getHelp(int time, FireToCentralProtocol fMsgReceived) {
+		for (Map.Entry<EntityID, String> entry : agentsState.entrySet()) {
+			EntityID agent = entry.getKey();
+			if (agentsState.get(agent).equals("READY") || 
+					agentsState.get(agent).equals("MOVING")) {
+				messages.add(new HelpProtocol(1, 'F', time, this.getID(), 
+						agent, fMsgReceived.getEventID()));
+				break;
+			}
+		}		
+	}
+	
 }

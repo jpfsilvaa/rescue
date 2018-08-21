@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
+import communication.FireToCentralProtocol;
+import communication.HelpProtocol;
 import communication.MessageConfirmation;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
@@ -78,7 +80,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					Human civilian = (Human) model.getEntity(changed);
 					if (!civiliansPerceived.contains(changed.getValue())) {
 						if (civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
-							messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+							messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 2, 
 									(state + " " + me.getPosition() + " " + civilian.getID() +
 									" A " + civilian.getBuriedness() + " " +
 									civilian.getHP())));
@@ -110,7 +112,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					if (Collections.disjoint(blockadesPerceived, currentBlockade)) {
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
 						// System.out.println("last" + Arrays.toString(b.getApexes()));
-						messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 2, 
+						messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 2, 
 								(state + " " + me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
 					}
 					break;
@@ -127,7 +129,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	@Override
 	protected void heardMessage(int time, Collection<Command> heard) {
     	if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY))
-            sendSubscribe(time, 2);
+            sendSubscribe(time, 1);
     	
         for (Command next : heard) {
         	Logger.debug("Heard" + next);
@@ -137,30 +139,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
         	msgFinal.add(new String (msgRaw));
         }
 
-        for (String msgReceived : msgFinal) {
-	        String[] msgSplited = msgReceived.split(" ");
-        	if (msgSplited != null) {
-	        	if (msgSplited.length > 1) {
-	        		
-	        		int code = Integer.parseInt(msgSplited[4]);
-	        		switch(code) {
-	        			case 4: // Comando de uma central para o agente
-	        				break;
-	        			case 5: // Confirmação de mensagem
-	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
-	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
-	        						msgSplited[5]);
-	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
-	        					recipientHasReceived = true;
-	        				}
-	        				msgSplited = null;
-	        				break;
-	        		}
-	        		
-	        	}
-	        }
-        }
+        handleMessage(time);
         
 	}
 	
@@ -190,7 +169,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 			case EXTINGUISHING:
 				Building buildingGoal = (Building) model.getEntity(goal);
 				if (!buildingsInFirePerceived.contains(goal.getValue())) {
-					messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 1, 
+					messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 1, 
 							(state + " " + me.getPosition() + " " + buildingGoal.getID() + " " +
 							buildingGoal.getTotalArea() + " " + buildingGoal.getFieryness())));
 					buildingsInFirePerceived.add(goal.getValue());
@@ -204,9 +183,11 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 				if(model.getEntity(goal) instanceof Building) {
 					Building building = (Building)model.getEntity(goal);
 					List<EntityID> neighbours = building.getNeighbours();
-					if(building.getFieryness() > 4) {
-						state = State.READY;
-						break;
+					if(building.isFierynessDefined()) {
+						if(building.getFieryness() > 4) {
+							state = State.READY;
+							break;
+						}
 					}
 					for(EntityID neighbour : neighbours) {
 						if(model.getEntity(neighbour) instanceof Road) {
@@ -229,12 +210,8 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					if(path == null) 
 						System.out.println("NO PATH TO " + goal.getValue());
 					else if(this.location().getID().getValue() == goal.getValue()) {
-						//System.out.println("ARRIVED TO " + goal.getValue());
 						state = State.READY;
 					}else {
-						//System.out.println("PATH TO GOAL \n");
-						//for(EntityID node : path)
-							//System.out.println("ID : "+node.getValue()+"\tTYPE: "+model.getEntity(node).getURN());
 						sendMove(time, path);
 					}
 				}
@@ -259,13 +236,11 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		msgFinal.clear();
 		
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new DummyProtocol(1, "A2C", 'F', time, me.getID(), 
+			messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 
 					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
-		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
 		if (messages.size() > 0) {
-			// TODO -> Fazer confirmação quando receber da central quando a comunicação estiver pronta mesmo (com estrategia e tal...)
 			if (!recipientHasReceived) {
 				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
 			}
@@ -286,6 +261,42 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	private void setGoal(StandardEntityURN urn, HashMap<StandardEntityURN, List<EntityID>> hm, State s) {
 		goal = hm.get(urn).get(rnd.nextInt(hm.get(urn).size()));
 		state = s;
+	}
+	
+	private void handleMessage(int time) {
+		for (String msgReceived : msgFinal) {
+	        String[] msgSplited = msgReceived.split(" ");
+        	if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {
+	        		
+	        		int code = Integer.parseInt(msgSplited[4]);
+	        		switch(code) {
+	        			case 4: // Comando de uma central para o agente
+	        				break;
+	        			case 5: // Confirmação de mensagem
+	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
+	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
+	        						msgSplited[5]);
+	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
+	        					recipientHasReceived = true;
+	        				}
+	        				msgSplited = null;
+	        				break;
+	        			case 6: // Pedido de ajuda
+	        				HelpProtocol hpReceived = new HelpProtocol(channelMsgReceived, msgSplited);
+	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
+	        					goal = hpReceived.getPlaceToHelp();
+	        					state = State.MOVING;
+	        					messages.add(new MessageConfirmation(hpReceived.getChannel(), "A2C", 'F', time, me.getID(), 
+	        							5, hpReceived.getSenderID().toString()));
+	        				}
+	        				break;
+	        		}
+	        		
+	        	}
+	        }
+        }
 	}
 
 }

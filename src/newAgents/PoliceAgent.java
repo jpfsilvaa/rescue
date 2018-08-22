@@ -11,7 +11,9 @@ import org.jfree.util.Rotation;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
+import communication.HelpProtocol;
 import communication.MessageConfirmation;
+import communication.Protocol;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.messages.MessageComponent;
@@ -41,6 +43,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		READY,
     	PATROL,
     	REMOVING_BLOCKADE,
+    	MOVING
     }
 	private State state = State.READY;
 	private int distance;
@@ -126,30 +129,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
         	msgFinal.add(new String (msgRaw));
         }
 
-        for (String msgReceived : msgFinal) {
-	        String[] msgSplited = msgReceived.split(" ");
-        	if (msgSplited != null) {
-	        	if (msgSplited.length > 1) {
-	        		
-	        		int code = Integer.parseInt(msgSplited[4]);
-	        		switch(code) {
-	        			case 4: // Comando de uma central para o agente
-	        				break;
-	        			case 5: // Confirmação de mensagem
-	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
-	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
-	        						msgSplited[5]);
-	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
-	        					recipientHasReceived = true;
-	        				}
-	        				msgSplited = null;
-	        				break;
-	        		}
-	        		
-	        	}
-	        }
-        }
+        handleMessage();
 	}
 
 	/**
@@ -207,6 +187,20 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 				else
 					sendMove(time, path);
 				break;
+			case MOVING:
+				path = search.breadthFirstSearch(location().getID(), goal);
+				if (path != null) {
+					if(me.getPosition().getValue() == goal.getValue()) {
+						state = State.READY;
+					}
+					else
+						sendMove(time, path);
+				}
+				else {
+					state = state.READY;
+				}
+				break;
+				
 		}
 		
 	}
@@ -225,9 +219,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
-		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
 		if (messages.size() > 0) {
-			// TODO -> Fazer confirmação quando receber da central quando a comunicação estiver pronta mesmo (com estrategia e tal...)
 			if (!recipientHasReceived) {
 				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
 			}
@@ -238,7 +230,6 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		}
 		
 		heardMessage(time, heard);
-		//System.out.println("(P)STATE---> " + state);
 		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
 		act(time);		
@@ -310,5 +301,41 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 
         }
         return (int)best;
+    }
+    
+    private void handleMessage() {
+    	for (String msgReceived : msgFinal) {
+	        String[] msgSplited = msgReceived.split(" ");
+        	if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {
+	        		
+	        		int code = Integer.parseInt(msgSplited[4]);
+	        		switch(Protocol.get(code)) {
+	        			case CENTRAL_TO_AGENT: // Comando de uma central para o agente
+	        				break;
+	        			case CONFIRMATION_MSG: // Confirmação de mensagem
+	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
+	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
+	        						msgSplited[5]);
+	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
+	        					recipientHasReceived = true;
+	        				}
+	        				msgSplited = null;
+	        				break;
+	        			case HELP_PROTOCOL:
+	        				HelpProtocol hpReceived = new HelpProtocol(channelMsgReceived, msgSplited);
+	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
+	        					goal = hpReceived.getPlaceToHelp();
+	        					state = State.MOVING;
+	        					// messages.add(new MessageConfirmation(hpReceived.getChannel(), "A2C", 'F', time, me.getID(), 
+	        							// 5, hpReceived.getSenderID().toString()));
+	        				}
+	        				break;
+	        		}
+	        		
+	        	}
+	        }
+        }
     }
 }

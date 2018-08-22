@@ -5,10 +5,15 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import communication.AbstractMessageProtocol;
 import communication.DummyProtocol;
+import communication.FireToCentralProtocol;
+import communication.HelpProtocol;
 import communication.MessageConfirmation;
+import communication.PoliceToCentralProtocol;
+import communication.Protocol;
 import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
@@ -20,6 +25,8 @@ import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.worldmodel.EntityID;
 
 public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
+	
+	private HashMap<EntityID, PoliceToCentralProtocol> agentsState = new HashMap<>();
 	
 	@Override
 	protected HashMap<StandardEntityURN, List<EntityID>> percept(int time, ChangeSet perceptions) {
@@ -48,19 +55,26 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	        	if (msgSplited.length > 1) {		        
 			        switch(messageFrom(channelMsgReceived, msgSplited)) {
 				    	case AGENT:
-				    		msgReceived = new DummyProtocol(channelMsgReceived, msgSplited);
+				    		msgReceived = new PoliceToCentralProtocol(channelMsgReceived, msgSplited);
+				    		PoliceToCentralProtocol pMsgReceived = (PoliceToCentralProtocol) msgReceived;
 				    		
-				    		if (msgReceived.getCode() == 2) {
-				    			String[] splitedDetails = msgReceived.getDetails().split(", ");
-				    			String centralDestination = splitedDetails[3];
-				    			messages.add(new DummyProtocol(2, "C2C", 'P', time, this.getID(), 
-		    							3, (centralDestination + " " + splitedDetails[4] + " " + splitedDetails[5])));
+				    		updateAgentsState(pMsgReceived);
+				    		
+				    		if (Protocol.get(pMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
+				    			messages.add(new PoliceToCentralProtocol(2, "C2C", 'P', time, this.getID(), 
+		    							3, (pMsgReceived.getCenterDestiny() + " " + pMsgReceived.getDetailCodeTwo_1() +
+		    									" " + pMsgReceived.getDetailCodeTwo_2())));
+				    		}
+				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
+				    			if(pMsgReceived.getBlockadeRepairCost() > 15) {
+				    				getHelp(time, pMsgReceived);
+				    			}
 				    		}
 				    		
 				    		msgSplited = null;
 				    		
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case CENTRAL:
 				    		msgReceived = new DummyProtocol(channelMsgReceived, 3, msgSplited);
@@ -68,7 +82,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				    		msgSplited = null;
 				    		
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case NOTHING:
 				    		msgSplited = null;
@@ -97,9 +111,14 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 		msgFinal.clear();
 		heardMessage(time, heard);
 		
-		// TODO -> Fazer com que a central receba e reconheça a confirmação de uma mensagem que ela recebeu também.
+		// System.out.println(agentsState.toString());
 		
 		if (messages.size() > 0) {
+			if (HelpProtocol.hasHelpMsgToSend(messages)) {
+				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
+				sendSpeak(time, hp.getChannel(), hp.getEntireMessage().getBytes());
+				messages.remove(hp);
+			}
 			if (MessageConfirmation.hasConfirmationToSend(messages)) {
 				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
 				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
@@ -141,6 +160,42 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
         }
         
         return result;
+	}
+	
+	/**
+	 * Método que verifica no hashMap de estados dos agentes 
+	 * bombeiros para definir a quem será solicitada ajuda, 
+	 * e assim defini um HelpProtocol a ser enviado.
+	 */
+	private void getHelp(int time, PoliceToCentralProtocol pMsgReceived) {
+		for (Map.Entry<EntityID, PoliceToCentralProtocol> entry : agentsState.entrySet()) {
+			EntityID agent = entry.getKey();
+			if (agentsState.get(agent).getState().equals("PATROL") 
+					|| agentsState.get(agent).getState().equals("READY")) {
+				messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
+						agent, pMsgReceived.getSenderID()));
+				break;
+			}
+			else {
+				/* Caso todos os agentes policiais já estejam ocupados, é verifficado
+				 * qual deles está reparando um bloqueio de custo menor que o pedido de ajuda.
+				 */
+				if (agentsState.get(agent).getBlockadeRepairCost() < pMsgReceived.getBlockadeRepairCost()) {
+					messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
+							agent, pMsgReceived.getSenderPosition()));
+					break;
+				}
+			}
+		}		
+	}
+	
+	/**
+	 * Adiciona o state de cada agente a um hashMap pra central 
+	 * saber quem está disponível caso necessite enviar ajuda
+	 * a algum outro bombeiro.
+	 */
+	private void updateAgentsState(PoliceToCentralProtocol pMsgReceived) {
+		agentsState.put(pMsgReceived.getSenderID(), pMsgReceived);
 	}
 	
 }

@@ -25,7 +25,7 @@ import rescuecore2.worldmodel.EntityID;
 
 public class FireStationAgent extends AbstractAgent<FireStation> {
 	
-	private HashMap<EntityID, String> agentsState = new HashMap<>();
+	private HashMap<EntityID, FireToCentralProtocol> agentsState = new HashMap<>();
 	
 	@Override
 	protected HashMap<StandardEntityURN, List<EntityID>> percept(int time, ChangeSet perceptions) {
@@ -107,8 +107,6 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 		msgFinal.clear();
 		heardMessage(time, heard);
 		
-		System.out.println(agentsState.toString());
-		
 		if (messages.size() > 0) {
 			if (HelpProtocol.hasHelpMsgToSend(messages)) {
 				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
@@ -163,7 +161,7 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 	 * a algum outro bombeiro.
 	 */
 	private void updateAgentsState(FireToCentralProtocol fMsgReceived) {
-		agentsState.put(fMsgReceived.getSenderID(), fMsgReceived.getState());
+		agentsState.put(fMsgReceived.getSenderID(), fMsgReceived);
 	}
 	
 	/**
@@ -172,13 +170,23 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 	 * e assim defini um HelpProtocol a ser enviado.
 	 */
 	private void getHelp(int time, FireToCentralProtocol fMsgReceived) {
-		for (Map.Entry<EntityID, String> entry : agentsState.entrySet()) {
+		for (Map.Entry<EntityID, FireToCentralProtocol> entry : agentsState.entrySet()) {
 			EntityID agent = entry.getKey();
-			if (agentsState.get(agent).equals("READY") || 
-					agentsState.get(agent).equals("MOVING")) {
+			if (agentsState.get(agent).getState().equals("READY") || 
+					agentsState.get(agent).getState().equals("MOVING")) {
 				messages.add(new HelpProtocol(1, 'F', time, this.getID(), 
 						agent, fMsgReceived.getEventID()));
 				break;
+			}
+			else {
+				/* Caso todos os agentes policiais já estejam ocupados, é verifficado
+				 * qual deles está reparando um bloqueio de custo menor que o pedido de ajuda.
+				 */
+				if (agentsState.get(agent).getTotalArea() < fMsgReceived.getTotalArea()) {
+					messages.add(new HelpProtocol(1, 'F', time, this.getID(), 
+							agent, fMsgReceived.getEventID()));
+					break;
+				}
 			}
 		}		
 	}

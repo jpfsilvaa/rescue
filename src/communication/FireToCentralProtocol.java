@@ -27,6 +27,8 @@ public class FireToCentralProtocol extends AbstractMessageProtocol{
 			case AGENT_STATUS:
 				this.state = splitedDetails[0];
 				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
+				this.totalArea = 0;
+				this.fieryness = 0;
 				break;
 			case AGENT_EVENT:
 				this.state = splitedDetails[0];
@@ -52,6 +54,8 @@ public class FireToCentralProtocol extends AbstractMessageProtocol{
 		case AGENT_STATUS:
 			this.state = msgReceived[5];
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
+			this.totalArea = 0;
+			this.fieryness = 0;
 			break;
 		case AGENT_EVENT:
 			this.state = msgReceived[5];

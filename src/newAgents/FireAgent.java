@@ -287,8 +287,8 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
 	        					goal = hpReceived.getPlaceToHelp();
 	        					state = State.MOVING;
-	        					messages.add(new MessageConfirmation(hpReceived.getChannel(), "A2C", 'F', time, me.getID(), 
-	        							5, hpReceived.getSenderID().toString()));
+	        					// messages.add(new MessageConfirmation(hpReceived.getChannel(), "A2C", 'F', time, me.getID(), 
+	        							// 5, hpReceived.getSenderID().toString()));
 	        				}
 	        				break;
 	        		}

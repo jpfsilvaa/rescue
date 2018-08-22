@@ -12,6 +12,7 @@ import communication.DummyProtocol;
 import communication.FireToCentralProtocol;
 import communication.HelpProtocol;
 import communication.MessageConfirmation;
+import communication.Protocol;
 import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
@@ -58,11 +59,11 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 				    		
 				    		updateAgentsState(fMsgReceived);
 				    		
-				    		if (msgReceived.getCode() == 2) {
+				    		if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
 				    			messages.add(new DummyProtocol(2, "C2C", 'F', time, this.getID(), 
 		    							3, (fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getDetailCodeTwo_1() + " " + fMsgReceived.getDetailCodeTwo_2())));
 				    		}
-				    		else if (msgReceived.getCode() == 1) {
+				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
 				    			if(fMsgReceived.getTotalArea() > 50 && fMsgReceived.getFieryness() < 3) {
 				    				getHelp(time, fMsgReceived);
 				    			}

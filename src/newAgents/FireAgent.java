@@ -15,6 +15,7 @@ import communication.DummyProtocol;
 import communication.FireToCentralProtocol;
 import communication.HelpProtocol;
 import communication.MessageConfirmation;
+import communication.Protocol;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.components.StandardAgent;
@@ -251,7 +252,6 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		}
 		
 		heardMessage(time, heard);
-		//System.out.println("(F)STATE---> " + state);
 		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
 		act(time);
@@ -268,12 +268,11 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	        String[] msgSplited = msgReceived.split(" ");
         	if (msgSplited != null) {
 	        	if (msgSplited.length > 1) {
-	        		
 	        		int code = Integer.parseInt(msgSplited[4]);
-	        		switch(code) {
-	        			case 4: // Comando de uma central para o agente
+	        		switch(Protocol.get(code)) {
+	        			case CENTRAL_TO_AGENT:
 	        				break;
-	        			case 5: // Confirmação de mensagem
+	        			case CONFIRMATION_MSG:
 	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
 	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
 	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
@@ -283,7 +282,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	        				}
 	        				msgSplited = null;
 	        				break;
-	        			case 6: // Pedido de ajuda
+	        			case HELP_PROTOCOL:
 	        				HelpProtocol hpReceived = new HelpProtocol(channelMsgReceived, msgSplited);
 	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
 	        					goal = hpReceived.getPlaceToHelp();

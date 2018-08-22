@@ -2,6 +2,11 @@ package communication;
 
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ * @author jsilva
+ * <br><br>
+ * Classe utilizada entre a comunicação dos agentes bombeiros e sua central de comando.
+ */
 public class FireToCentralProtocol extends AbstractMessageProtocol{
 
 	private String state;
@@ -18,19 +23,19 @@ public class FireToCentralProtocol extends AbstractMessageProtocol{
 		super(channel, type, agentChar, time, senderID, code, details);
 		
 		String[] splitedDetails = details.split(" ");;
-		switch(code) {
-			case 0:
+		switch(Protocol.get(code)) {
+			case AGENT_STATUS:
 				this.state = splitedDetails[0];
 				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
 				break;
-			case 1:
+			case AGENT_EVENT:
 				this.state = splitedDetails[0];
 				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
 				this.eventID = new EntityID(Integer.parseInt(splitedDetails[2]));
 				this.totalArea = Integer.parseInt(splitedDetails[3]);
 				this.fieryness = Integer.parseInt(splitedDetails[4]);
 				break;
-			case 2:
+			case AGENT_EXTERN_EVENT:
 				this.state = splitedDetails[0];
 				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
 				this.eventID = new EntityID(Integer.parseInt(splitedDetails[2]));
@@ -43,19 +48,19 @@ public class FireToCentralProtocol extends AbstractMessageProtocol{
 	
 	public FireToCentralProtocol(int channel, String[] msgReceived) {
 		super(channel, msgReceived); 
-		switch(super.getCode()) {
-		case 0:
+		switch(Protocol.get(super.getCode())) {
+		case AGENT_STATUS:
 			this.state = msgReceived[5];
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
 			break;
-		case 1:
+		case AGENT_EVENT:
 			this.state = msgReceived[5];
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
 			this.eventID = new EntityID(Integer.parseInt(msgReceived[7]));
 			this.totalArea = Integer.parseInt(msgReceived[8]);
 			this.fieryness = Integer.parseInt(msgReceived[9]);
 			break;
-		case 2:
+		case AGENT_EXTERN_EVENT:
 			this.state = msgReceived[5];
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
 			this.eventID = new EntityID(Integer.parseInt(msgReceived[7]));

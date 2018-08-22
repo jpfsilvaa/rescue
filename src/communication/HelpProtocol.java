@@ -4,6 +4,13 @@ import java.util.ArrayList;
 
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ * @author jsilva
+ * <br><br>
+ * Classe utilizada pelo Centro de comando de cada agente, para quando precisar 
+ * solicitar um pedido de ajuda em um evento que só um agente não é suficiente
+ * para resolvê-lo.
+ */
 public class HelpProtocol extends AbstractMessageProtocol {
 
 	private EntityID agentDestiny;
@@ -30,6 +37,12 @@ public class HelpProtocol extends AbstractMessageProtocol {
 		return placeToHelp;
 	}
 	
+	/**
+	 * De acordo com a lista de mensagens, verifica se nesta está contida aguma mensagem 
+	 * do tipo pedido de ajuda.
+	 * @param messages - Lista de mensagens utilizada pelo agente.
+	 * @return - retorna um booleano dizendo se a lista contém ou não uma mensagem do tipo Pedido de ajuda.
+	 */
 	public static boolean hasHelpMsgToSend(ArrayList<AbstractMessageProtocol> messages) {
 		boolean hasHelpMsg = false;
 
@@ -40,6 +53,12 @@ public class HelpProtocol extends AbstractMessageProtocol {
 		return hasHelpMsg;
 	}
 	
+	/**
+	 * Esse método é chamado quando quer se obter uma mensagem do tipo PEdido de ajuda 
+	 * da lista passada como parâmetro.
+	 * @param messages - LIsta de mensagens utilizada pelo agente
+	 * @return - retorna um objeto do tipo {@link HelpProtocol} 
+	 */
 	public static HelpProtocol getHelpMsgFromList(ArrayList<AbstractMessageProtocol> messages) {
 		HelpProtocol result = null;
 		for (AbstractMessageProtocol mp : messages)

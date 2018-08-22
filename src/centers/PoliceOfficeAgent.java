@@ -108,27 +108,8 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		msgFinal.clear();
+		sendMessages(time);
 		heardMessage(time, heard);
-		
-		// System.out.println(agentsState.toString());
-		
-		if (messages.size() > 0) {
-			if (HelpProtocol.hasHelpMsgToSend(messages)) {
-				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
-				sendSpeak(time, hp.getChannel(), hp.getEntireMessage().getBytes());
-				messages.remove(hp);
-			}
-			if (MessageConfirmation.hasConfirmationToSend(messages)) {
-				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
-				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
-				messages.remove(mc);
-			}
-			if (messages.size() > 0) {
-				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
-				messages.remove(0);
-			}
-		}
 	}
 
 	
@@ -196,6 +177,27 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	 */
 	private void updateAgentsState(PoliceToCentralProtocol pMsgReceived) {
 		agentsState.put(pMsgReceived.getSenderID(), pMsgReceived);
+	}
+
+	@Override
+	public void sendMessages(int time) {
+		msgFinal.clear();
+		if (messages.size() > 0) {
+			if (HelpProtocol.hasHelpMsgToSend(messages)) {
+				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
+				sendSpeak(time, hp.getChannel(), hp.getEntireMessage().getBytes());
+				messages.remove(hp);
+			}
+			if (MessageConfirmation.hasConfirmationToSend(messages)) {
+				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
+				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
+				messages.remove(mc);
+			}
+			if (messages.size() > 0) {
+				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
+				messages.remove(0);
+			}
+		}
 	}
 	
 }

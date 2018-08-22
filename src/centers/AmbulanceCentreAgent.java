@@ -42,7 +42,7 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
         	msgFinal.add(new String (msgRaw));
         }
  
-        //TODO -> Depois que houver um tramamento de mensagens mesmo, fazer isso aqui virar um metodo do AbstractAgent, pra evitar repetição em todos centros desse cógido
+        //TODO -> Depois que houver um tratamento de mensagens mesmo, fazer isso aqui virar um metodo do AbstractAgent, pra evitar repetição em todos centros desse cógido
         for (String message : msgFinal) {
         	String[] msgSplited = message.split(" ");
 	        if (msgSplited != null) {
@@ -90,22 +90,8 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		msgFinal.clear();
+		sendMessages(time);
 		heardMessage(time, heard);
-		
-		// TODO -> Fazer com que a central receba e reconheça a confirmação de uma mensagem que ela recebeu também.
-		
-		if (messages.size() > 0) {
-			if (MessageConfirmation.hasConfirmationToSend(messages)) {
-				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
-				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
-				messages.remove(mc);
-			}
-			if (messages.size() > 0) {
-				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
-				messages.remove(0);
-			}
-		}
 	}
 
 	
@@ -137,6 +123,22 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
         }
         
         return result;
+	}
+
+	@Override
+	public void sendMessages(int time) {
+		msgFinal.clear();
+		if (messages.size() > 0) {
+			if (MessageConfirmation.hasConfirmationToSend(messages)) {
+				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
+				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
+				messages.remove(mc);
+			}
+			if (messages.size() > 0) {
+				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
+				messages.remove(0);
+			}
+		}
 	}
 
 }

@@ -234,23 +234,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		msgFinal.clear();
-		
-		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
-			messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 
-					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
-		
-		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
-		if (messages.size() > 0) {
-			if (!recipientHasReceived) {
-				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
-			}
-			else {
-				recipientHasReceived  = false;
-				messages.remove(0);
-			}
-		}
-		
+		sendMessages(time);
 		heardMessage(time, heard);
 		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
@@ -296,6 +280,25 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	        	}
 	        }
         }
+	}
+
+	@Override
+	public void sendMessages(int time) {
+		msgFinal.clear();
+		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
+			messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 
+					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
+		
+		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
+		if (messages.size() > 0) {
+			if (!recipientHasReceived) {
+				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+			}
+			else {
+				recipientHasReceived  = false;
+				messages.remove(0);
+			}
+		}		
 	}
 
 }

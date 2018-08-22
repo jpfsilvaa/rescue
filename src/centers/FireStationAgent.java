@@ -104,25 +104,8 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		msgFinal.clear();
+		sendMessages(time);
 		heardMessage(time, heard);
-		
-		if (messages.size() > 0) {
-			if (HelpProtocol.hasHelpMsgToSend(messages)) {
-				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
-				sendSpeak(time, hp.getChannel(), hp.getEntireMessage().getBytes());
-				messages.remove(hp);
-			}
-			if (MessageConfirmation.hasConfirmationToSend(messages)) {
-				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
-				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
-				messages.remove(mc);
-			}
-			if (messages.size() > 0) {
-				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
-				messages.remove(0);
-			}
-		}
 	}
 
     @Override
@@ -189,6 +172,27 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 				}
 			}
 		}		
+	}
+
+	@Override
+	public void sendMessages(int time) {
+		msgFinal.clear();
+		if (messages.size() > 0) {
+			if (HelpProtocol.hasHelpMsgToSend(messages)) {
+				HelpProtocol hp = HelpProtocol.getHelpMsgFromList(messages);
+				sendSpeak(time, hp.getChannel(), hp.getEntireMessage().getBytes());
+				messages.remove(hp);
+			}
+			if (MessageConfirmation.hasConfirmationToSend(messages)) {
+				MessageConfirmation mc = MessageConfirmation.getConfirmationMsgFromList(messages);
+				sendSpeak(time, mc.getChannel(), mc.getEntireMessage().getBytes());
+				messages.remove(mc);
+			}
+			if (messages.size() > 0) {
+				sendSpeak(time, 2, messages.get(0).getEntireMessage().getBytes());
+				messages.remove(0);
+			}
+		}
 	}
 	
 }

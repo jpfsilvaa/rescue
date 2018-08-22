@@ -48,4 +48,6 @@ public abstract class AbstractAgent<E extends StandardEntity> extends StandardAg
 		return Arrays.copyOfRange(array, begin, end);
 	}
 	
+	public abstract void sendMessages(int time);
+	
 }

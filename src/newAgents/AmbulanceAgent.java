@@ -13,7 +13,9 @@ import java.util.stream.Collectors;
 import communication.AbstractMessageProtocol;
 import communication.AmbToCentralProtocol;
 import communication.DummyProtocol;
+import communication.HelpProtocol;
 import communication.MessageConfirmation;
+import communication.Protocol;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.entities.AmbulanceTeam;
@@ -47,6 +49,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	private List <EntityID> exploredBuildings = new ArrayList<EntityID>();
 	private boolean recipientHasReceived = false;
 	private int channelMsgReceived = 0;
+	private boolean isOnHelpAsk = false;
 	
 	protected void postConnect() {
 		super.postConnect();
@@ -116,7 +119,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					 */
 					if (Collections.disjoint(blockadesPerceived, currentBlockade)) {
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
-						// System.out.println("last" + Arrays.toString(b.getApexes()));
 						messages.add(new AmbToCentralProtocol(1, "A2C", 'A', time, me.getID(), 2, 
 								(state + " " + me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
 					}
@@ -138,38 +140,18 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY))
             sendSubscribe(time, 1);
 		
-    	int cont = 0;
+    	EntityID who = null;
         for (Command next : heard) {
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
+        	who = msg.getAgentID();
         	channelMsgReceived = msg.getChannel();
         	byte[] msgRaw = msg.getContent();
         	msgFinal.add(new String (msgRaw));
         }
         
-        for (String msgReceived : msgFinal) {
-	        String[] msgSplited = msgReceived.split(" ");
-        	if (msgSplited != null) {
-	        	if (msgSplited.length > 1) {
-	        		
-	        		int code = Integer.parseInt(msgSplited[4]);
-	        		switch(code) {
-	        			case 4: // Comando de uma central para o agente
-	        				break;
-	        			case 5: // Confirmação de mensagem
-	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
-	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
-	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
-	        						msgSplited[5]);
-	        				if (confirmation.getDestiny().getValue() == me.getID().getValue())
-	        					recipientHasReceived = true;
-	        				msgSplited = null;
-	        				break;
-	        		}
-	        		
-	        	}
-	        }
-        }
+        handleMessage();
+
     }
 
 	/**
@@ -187,19 +169,16 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		}
 		else {
 			if(possibleGoals.get(StandardEntityURN.CIVILIAN).size() > 0) {
-				//System.out.println(1);
 				setGoal(StandardEntityURN.CIVILIAN, possibleGoals, State.MOVING);
 				return;
 			}
 	
 			if(possibleGoals.get(StandardEntityURN.BUILDING).size() > 0) {
-				//System.out.println(2);
 				setGoal(StandardEntityURN.BUILDING, possibleGoals, State.BUILDING_SEARCH);
 				return;
 			}
 	
 			if(possibleGoals.get(StandardEntityURN.ROAD).size() > 0) {
-				//System.out.println(2);
 				setGoal(StandardEntityURN.ROAD, possibleGoals, State.PATROL);
 				return;
 			}	
@@ -218,7 +197,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	 * <li>PATROL: Faz a patrulha quando chega no "road" definido em "goal", muda para o estado
 	 * "READY", que é um estado intermediário demonstrando que o agente está "livre" para ações.</li>
 	 * <li>RESCUING: Estado que faz o resgate do agente a ser salvo e o coloca na ambulancia, mudando
-	 * para o estado "UNLOADIND" para descarregar o agente resgatado.</li>
+	 * para o estado "UNLOADING" para descarregar o agente resgatado.</li>
 	 * <li>UNLOADING: Estado que descarrega o agente desntro de um refúgio, completando o objetivo principal do
 	 *  agente ambulância, que é o resgate completo de um civil.</li> 
 	 */
@@ -233,13 +212,16 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 				movState(goal, path, State.READY, time);
 				break;
 			case MOVING:
-				movState(goal, path, State.RESCUING, time);
+				if (isOnHelpAsk) {
+					movState(goal, path, State.READY, time);
+				}
+				else
+					movState(goal, path, State.RESCUING, time);
 				break;
 			case RESCUING:
 				Human civilian = (Human) model.getEntity(goal);
 				if (!civiliansPerceived.contains(goal.getValue())) { // TOMAR CUIDADO AQUI POR QUE ELE PODE PERCEBER, DEPOIS DESISTIR, AÍ NÃO ENTRA AQUI MAIS
 					if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
-						System.out.println("CÓDIGO 1 - " + goal);
 						messages.add(new AmbToCentralProtocol(1, "A2C", 'A', time, me.getID(), 1, 
 									(state + " " + me.getPosition() + " " + civilian.getID() +
 										" " + civilian.getBuriedness() + " " + civilian.getHP())));
@@ -264,7 +246,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		        		sendMove(time, path);
 		        		if(location() instanceof Refuge) {
 		        			//sendUnload(time); // ficou no think
-		        			System.out.println("************UNLOADING");
 		        			state = State.READY;
 		        			break;
 		        		}		        		
@@ -346,6 +327,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		
 		
 		if(me.getPosition().getValue() == goal.getValue()) {
+			isOnHelpAsk = false;
 			state = nxtState;
 			return;
 		}
@@ -384,17 +366,53 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
-		// TODO -> Isso aí na linha de cima funciona bem, prioriza mensagens 2 na frente da 1, mas verificar se não ta acumulando mensagens
 		if (messages.size() > 0) {
-			// TODO -> Fazer confirmação quando receber da central quando a comunicação estiver pronta mesmo (com estrategia e tal...)
 			if (!recipientHasReceived) {
-				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+				sendSpeak(time, 1, (messages.get(0).getEntireMessage()).getBytes());
 			}
 			else {
 				recipientHasReceived  = false;
 				messages.remove(0);
 			}
 		}
+	}
+	
+	private void handleMessage() {
+		for (String msgReceived : msgFinal) {
+	        String[] msgSplited = msgReceived.split(" ");
+        	if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {
+	        		
+	        		int code = Integer.parseInt(msgSplited[4]);
+	        		switch(Protocol.get(code)) {
+	        			case CENTRAL_TO_AGENT:
+	        				break;
+	        			case CONFIRMATION_MSG:
+	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
+	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
+	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
+	        						msgSplited[5]);
+	        				if (confirmation.getDestiny().getValue() == me.getID().getValue()) {
+	        					recipientHasReceived = true;
+	        				}
+	        				msgSplited = null;
+	        				break;
+	        			case HELP_PROTOCOL:
+	        				HelpProtocol hpReceived = new HelpProtocol(channelMsgReceived, msgSplited);
+	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
+	        					if (!someoneOnBoard()) {
+		        					goal = hpReceived.getPlaceToHelp();
+		        					isOnHelpAsk = true;
+		        					state = State.MOVING;
+	        					}
+	        						
+	        				}
+	        				break;
+	        		}
+	        		
+	        	}
+	        }
+        }
 	}
 	
 }

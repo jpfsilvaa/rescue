@@ -4,7 +4,7 @@ import rescuecore2.worldmodel.EntityID;
 
 public class AmbToCentralProtocol extends AbstractMessageProtocol {
 	private String state;
-	private EntityID civilBuriedness;
+	private int civilBuriedness;
 	private int civilHP;
 	private int detailCodeTwo_1;
 	private int detailCodeTwo_2;
@@ -23,14 +23,14 @@ public class AmbToCentralProtocol extends AbstractMessageProtocol {
 				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
 				this.eventID = new EntityID(0);
 				this.civilHP = 0;
-				this.civilBuriedness = new EntityID(0);
+				this.civilBuriedness = 0;
 				break;
 			case AGENT_EVENT:
 				this.state = splitedDetails[0];
 				this.senderPosition = new EntityID(Integer.parseInt(splitedDetails[1]));
 				this.eventID = new EntityID(Integer.parseInt(splitedDetails[2]));
 				this.civilHP = Integer.parseInt(splitedDetails[3]);
-				this.civilBuriedness = new EntityID(Integer.parseInt(splitedDetails[4]));
+				this.civilBuriedness = Integer.parseInt(splitedDetails[4]);
 				break;
 			case AGENT_EXTERN_EVENT:
 				this.state = splitedDetails[0];
@@ -51,14 +51,14 @@ public class AmbToCentralProtocol extends AbstractMessageProtocol {
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
 			this.eventID = new EntityID(0);
 			this.civilHP = 0;
-			this.civilBuriedness = new EntityID(0);
+			this.civilBuriedness = 0;
 			break;
 		case AGENT_EVENT:
 			this.state = msgReceived[5];
 			this.senderPosition = new EntityID(Integer.parseInt(msgReceived[6]));
 			this.eventID = new EntityID(Integer.parseInt(msgReceived[7]));
 			this.civilHP = Integer.parseInt(msgReceived[8]);
-			this.civilBuriedness = new EntityID(Integer.parseInt(msgReceived[9]));
+			this.civilBuriedness = Integer.parseInt(msgReceived[9]);
 			break;
 		case AGENT_EXTERN_EVENT:
 			this.state = msgReceived[5];
@@ -75,7 +75,7 @@ public class AmbToCentralProtocol extends AbstractMessageProtocol {
 		return state;
 	}
 
-	public EntityID getCivilBuriedness() {
+	public int getCivilBuriedness() {
 		return civilBuriedness;
 	}
 

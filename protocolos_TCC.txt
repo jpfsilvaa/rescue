@@ -24,7 +24,7 @@ No caso código 2:
 
 Central -> Central ---------> Canal 2
 (No caso de um agente perceber um evento que nao pode resolver, a central comunica a central resposável pelo evento)
-"C2C A||F||P time meu_entityID código(3) A||F||P(destino) entityID_evento entityID_local_do_Agente_que_avistou_evento"
+"C2C A||F||P time meu_entityID código(3) A||F||P(destino) entityID_evento entityID_local_do_Agente_que_avistou_evento detalhe1 detalhe2"
 
 --------------------------
 

@@ -295,9 +295,9 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 	        		
 	        		int code = Integer.parseInt(msgSplited[4]);
 	        		switch(Protocol.get(code)) {
-	        			case CENTRAL_TO_AGENT: // Comando de uma central para o agente
+	        			case CENTRAL_TO_AGENT:
 	        				break;
-	        			case CONFIRMATION_MSG: // Confirmação de mensagem
+	        			case CONFIRMATION_MSG:
 	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
 	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 
 	        						new EntityID(Integer.parseInt(msgSplited[3])), code, 
@@ -312,8 +312,6 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
 	        					goal = hpReceived.getPlaceToHelp();
 	        					state = State.MOVING;
-	        					// messages.add(new MessageConfirmation(hpReceived.getChannel(), "A2C", 'F', time, me.getID(), 
-	        							// 5, hpReceived.getSenderID().toString()));
 	        				}
 	        				break;
 	        		}
@@ -333,7 +331,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {
 			if (!recipientHasReceived) {
-				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+				sendSpeak(time, 1, (messages.get(0).getEntireMessage()).getBytes());
 			}
 			else {
 				recipientHasReceived  = false;

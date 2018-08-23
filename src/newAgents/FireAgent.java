@@ -271,8 +271,6 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	        				if (hpReceived.getAgentDestiny().getValue() == me.getID().getValue()) {
 	        					goal = hpReceived.getPlaceToHelp();
 	        					state = State.MOVING;
-	        					// messages.add(new MessageConfirmation(hpReceived.getChannel(), "A2C", 'F', time, me.getID(), 
-	        							// 5, hpReceived.getSenderID().toString()));
 	        				}
 	        				break;
 	        		}
@@ -292,7 +290,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {
 			if (!recipientHasReceived) {
-				sendSpeak(time, messages.get(0).getChannel(), (messages.get(0).getEntireMessage()).getBytes());
+				sendSpeak(time, 1, (messages.get(0).getEntireMessage()).getBytes());
 			}
 			else {
 				recipientHasReceived  = false;

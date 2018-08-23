@@ -36,7 +36,6 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	@Override
 	protected void heardMessage(int time, Collection<Command> heard) {
 		int channelMsgReceived = 0;
-		EntityID whoSent = null;
 		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY))
             sendSubscribe(time, 1, 2);
     	
@@ -44,7 +43,6 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
         	channelMsgReceived = msg.getChannel();
-        	whoSent = msg.getAgentID();
         	byte[] msgRaw = msg.getContent();
         	msgFinal.add(new String (msgRaw));
         }
@@ -154,7 +152,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 			if (agentsState.get(agent).getState().equals("PATROL") 
 					|| agentsState.get(agent).getState().equals("READY")) {
 				messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
-						agent, pMsgReceived.getSenderID()));
+						agent, pMsgReceived.getSenderPosition()));
 				break;
 			}
 			else {

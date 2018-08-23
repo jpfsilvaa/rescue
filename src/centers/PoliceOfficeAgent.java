@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import communication.AbstractMessageProtocol;
+import communication.CentralToCentralProtocol;
 import communication.DummyProtocol;
 import communication.FireToCentralProtocol;
 import communication.HelpProtocol;
@@ -59,8 +60,9 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				    		updateAgentsState(pMsgReceived);
 				    		
 				    		if (Protocol.get(pMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
-				    			messages.add(new PoliceToCentralProtocol(2, "C2C", 'P', time, this.getID(), 
-		    							3, (pMsgReceived.getCenterDestiny() + " " + pMsgReceived.getDetailCodeTwo_1() +
+				    			messages.add(new CentralToCentralProtocol('P', time, this.getID(), 
+		    							(pMsgReceived.getCenterDestiny() + " " + pMsgReceived.getEventID() +
+		    									" " + pMsgReceived.getSenderPosition() + " " + pMsgReceived.getDetailCodeTwo_1() +
 		    									" " + pMsgReceived.getDetailCodeTwo_2())));
 				    		}
 				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
@@ -75,8 +77,9 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case CENTRAL:
-				    		msgReceived = new DummyProtocol(channelMsgReceived, 3, msgSplited);
-				    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
+				    		msgReceived = new CentralToCentralProtocol(msgSplited);
+				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
+				    		System.out.println("##teste-> " + cMsgReceived.getCenterDestiny());
 				    		msgSplited = null;
 				    		
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA

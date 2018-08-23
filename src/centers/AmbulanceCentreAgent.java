@@ -14,6 +14,7 @@ import communication.PoliceToCentralProtocol;
 import communication.Protocol;
 import communication.AbstractMessageProtocol;
 import communication.AmbToCentralProtocol;
+import communication.CentralToCentralProtocol;
 import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
@@ -61,8 +62,10 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 				    		System.out.println(aMsgReceived.getState());
 				    		
 				    		if (Protocol.get(aMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
-				    			messages.add(new AmbToCentralProtocol(2, "C2C", 'A', time, this.getID(), 
-		    							3, (aMsgReceived.getCenterDestiny() + " " + aMsgReceived.getDetailCodeTwo_1() + " " + aMsgReceived.getDetailCodeTwo_2())));
+				    			messages.add(new CentralToCentralProtocol('A', time, this.getID(), 
+		    							(aMsgReceived.getCenterDestiny() + " " + aMsgReceived.getEventID() +
+		    									" " + aMsgReceived.getSenderPosition() + " " + aMsgReceived.getDetailCodeTwo_1() +
+		    									" " + aMsgReceived.getDetailCodeTwo_2())));
 				    		}
 				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
 				    			if(aMsgReceived.getCivilBuriedness() >= 20) {

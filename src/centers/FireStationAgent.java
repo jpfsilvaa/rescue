@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import communication.AbstractMessageProtocol;
+import communication.CentralToCentralProtocol;
 import communication.DummyProtocol;
 import communication.FireToCentralProtocol;
 import communication.HelpProtocol;
@@ -35,7 +36,6 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 	@Override
 	protected void heardMessage(int time, Collection<Command> heard) {
 		int channelMsgReceived = 0;
-		EntityID whoSent = null;
 		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY))
             sendSubscribe(time, 1, 2);
     	
@@ -43,7 +43,6 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
         	Logger.debug("Heard" + next);
         	AKSpeak msg = (AKSpeak) next;
         	channelMsgReceived = msg.getChannel();
-        	whoSent = msg.getAgentID();
         	byte[] msgRaw = msg.getContent();
         	msgFinal.add(new String (msgRaw));
         }
@@ -60,8 +59,10 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 				    		updateAgentsState(fMsgReceived);
 				    		
 				    		if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
-				    			messages.add(new DummyProtocol(2, "C2C", 'F', time, this.getID(), 
-		    							3, (fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getDetailCodeTwo_1() + " " + fMsgReceived.getDetailCodeTwo_2())));
+				    			messages.add(new CentralToCentralProtocol('F', time, this.getID(), 
+		    							(fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getEventID() +
+		    									" " + fMsgReceived.getSenderPosition() + " " + fMsgReceived.getDetailCodeTwo_1() +
+		    									" " + fMsgReceived.getDetailCodeTwo_2())));
 				    		}
 				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
 				    			if(fMsgReceived.getTotalArea() > 50 && fMsgReceived.getFieryness() < 3) {

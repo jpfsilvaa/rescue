@@ -10,9 +10,8 @@ public enum Protocol {
 	AGENT_EVENT(1),
 	AGENT_EXTERN_EVENT(2),
 	CENTRAL_TO_CENTRAL(3),
-	CENTRAL_TO_AGENT(4),
-	CONFIRMATION_MSG(5),
-	HELP_PROTOCOL(6);
+	HELP_PROTOCOL(4),
+	CONFIRMATION_MSG(5);
 	
 	private static final HashMap<Integer,Protocol> lookup = new HashMap<Integer, Protocol>();
 	

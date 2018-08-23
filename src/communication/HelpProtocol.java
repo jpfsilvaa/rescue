@@ -18,7 +18,7 @@ public class HelpProtocol extends AbstractMessageProtocol {
 	
 	public HelpProtocol(int channel, char agentChar, 
 			int time, EntityID myID, EntityID agentDestiny, EntityID placeToHelp) {
-		super(channel, "C2A", agentChar, time, myID, 6, (agentDestiny.toString() + " " + placeToHelp.toString()));
+		super(channel, "C2A", agentChar, time, myID, 4, (agentDestiny.toString() + " " + placeToHelp.toString()));
 		this.agentDestiny = agentDestiny;
 		this.placeToHelp = placeToHelp;
 	}

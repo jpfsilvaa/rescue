@@ -385,8 +385,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	        		
 	        		int code = Integer.parseInt(msgSplited[4]);
 	        		switch(Protocol.get(code)) {
-	        			case CENTRAL_TO_AGENT:
-	        				break;
 	        			case CONFIRMATION_MSG:
 	        				MessageConfirmation confirmation = new MessageConfirmation(channelMsgReceived, msgSplited[0], 
 	        						msgSplited[1].charAt(0), Integer.parseInt(msgSplited[2]), 

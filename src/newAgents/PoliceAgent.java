@@ -95,18 +95,18 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 				break;
 				case ROAD:
 					roadsToPatrol.add(changed);
-					break;
+				break;
 				case BUILDING:
 					Building buildingPerceived = (Building) model.getEntity(changed);
 					if (!buildingsInFirePerceived.contains(changed.getValue())) {
 						if (buildingPerceived.isOnFire() && buildingPerceived.getFieryness() > 1) {
 							messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 2, 
 									(state + " " + me.getPosition() + " " + buildingPerceived.getID() + " F " 
-									+ buildingPerceived.getTotalArea() +" " + buildingPerceived.getFieryness())));
+									+ buildingPerceived.getTotalArea() + " " + buildingPerceived.getFieryness())));
 						}
 						buildingsInFirePerceived.add(changed.getValue());
 					}
-					break;
+				break;
 			}
 		}
 		
@@ -197,7 +197,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 						sendMove(time, path);
 				}
 				else {
-					state = state.READY;
+					state = State.READY;
 				}
 				break;
 				

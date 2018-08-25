@@ -58,7 +58,7 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 				    		
 				    		updateAgentsState(fMsgReceived);
 				    		
-				    		if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
+				    		if (Protocol.get(fMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
 				    			messages.add(new CentralToCentralProtocol('F', time, this.getID(), 
 		    							(fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getEventID() +
 		    									" " + fMsgReceived.getSenderPosition() + " " + fMsgReceived.getDetailCodeTwo_1() +

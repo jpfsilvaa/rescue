@@ -59,7 +59,6 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 				    		AmbToCentralProtocol aMsgReceived = (AmbToCentralProtocol) msgReceived;
 				    		
 				    		updateAgentsState(aMsgReceived);
-				    		System.out.println(aMsgReceived.getState());
 				    		
 				    		if (Protocol.get(aMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
 				    			messages.add(new CentralToCentralProtocol('A', time, this.getID(), 
@@ -69,7 +68,6 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 				    		}
 				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
 				    			if(aMsgReceived.getCivilBuriedness() >= 20) {
-				    				System.out.println("####CIVIL COM MAIS DE 50 DE BURIEDNESS");
 				    				getHelp(time, aMsgReceived);
 				    			}
 				    		}

@@ -189,9 +189,6 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 				break;
 			}
 			else {
-				/* Caso todos os agentes policiais já estejam ocupados, é verifficado
-				 * qual deles está reparando um bloqueio de custo menor que o pedido de ajuda.
-				 */
 				if (agentsState.get(agent).getTotalArea() < cMsgReceived.getDetail_1()) {
 					messages.add(new HelpProtocol(1, 'F', time, this.getID(), 
 							agent, cMsgReceived.getEventPosition()));

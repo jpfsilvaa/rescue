@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import communication.DummyProtocol;
+import communication.FireToCentralProtocol;
 import communication.HelpProtocol;
 import communication.MessageConfirmation;
 import communication.PoliceToCentralProtocol;
@@ -77,8 +78,11 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'A', time, this.getID(), 5, msgReceived.getSenderID().toString()));
 				    		break;
 				    	case CENTRAL:
-				    		msgReceived = new DummyProtocol(channelMsgReceived, 3, msgSplited);
-				    		// TODO -> Pegar os detalhes da mensagem percebida e designar um agente para resolver o evento
+				    		msgReceived = new CentralToCentralProtocol(msgSplited);
+				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
+				    		
+				    		sendHelp(time, cMsgReceived);
+				    		
 				    		msgSplited = null;
 				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
 					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'A', time, this.getID(), 5, msgReceived.getSenderID().toString()));
@@ -161,6 +165,26 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 				if (agentsState.get(agent).getCivilHP() < aMsgReceived.getCivilHP()) {
 					messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
 							agent, aMsgReceived.getSenderPosition()));
+					break;
+				}
+			}
+		}		
+	}
+	
+	private void sendHelp(int time, CentralToCentralProtocol cMsgReceived) {
+		for (Map.Entry<EntityID, AmbToCentralProtocol> entry : agentsState.entrySet()) {
+			EntityID agent = entry.getKey();
+			if (agentsState.get(agent).getState().equals("READY") 
+					|| agentsState.get(agent).getState().equals("PATROL")
+					|| agentsState.get(agent).getState().equals("BUILDING_SEARCH")) {
+				messages.add(new HelpProtocol(1, 'A', time, this.getID(), 
+						agent, cMsgReceived.getEventPosition()));
+				break;
+			}
+			else {
+				if (agentsState.get(agent).getCivilHP() < cMsgReceived.getDetail_1()) {
+					messages.add(new HelpProtocol(1, 'A', time, this.getID(), 
+							agent, cMsgReceived.getEventPosition()));
 					break;
 				}
 			}

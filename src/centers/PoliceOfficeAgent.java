@@ -189,7 +189,6 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				 * qual deles está reparando um bloqueio de custo menor que o pedido de ajuda.
 				 */
 				if (agentsState.get(agent).getBlockadeRepairCost() < cMsgReceived.getDetail_1()) {
-					System.out.println(model.getEntity(cMsgReceived.getEventPosition()) instanceof Area);
 					messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
 							agent, cMsgReceived.getEventPosition()));
 					break;

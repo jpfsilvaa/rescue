@@ -28,6 +28,7 @@ import rescuecore2.worldmodel.EntityID;
 public class FireStationAgent extends AbstractAgent<FireStation> {
 	
 	private HashMap<EntityID, FireToCentralProtocol> agentsState = new HashMap<>();
+	public int channelMsgReceived = 0;	
 	
 	@Override
 	protected HashMap<StandardEntityURN, List<EntityID>> percept(int time, ChangeSet perceptions) {
@@ -36,7 +37,6 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 
 	@Override
 	protected void heardMessage(int time, Collection<Command> heard) {
-		int channelMsgReceived = 0;
 		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY))
             sendSubscribe(time, 1, 2);
     	
@@ -48,53 +48,7 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
         	msgFinal.add(new String (msgRaw));
         }
         
-        for (String message : msgFinal) {
-        	String[] msgSplited = message.split(" ");
-	        if (msgSplited != null) {
-	        	if (msgSplited.length > 1) {		        
-			        switch(messageFrom(channelMsgReceived, msgSplited)) {
-				    	case AGENT:				    		
-				    		msgReceived = new FireToCentralProtocol(channelMsgReceived, msgSplited);
-				    		FireToCentralProtocol fMsgReceived = (FireToCentralProtocol) msgReceived;
-				    		
-				    		updateAgentsState(fMsgReceived);
-				    		
-				    		if (Protocol.get(fMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
-				    			messages.add(new CentralToCentralProtocol('F', time, this.getID(), 
-		    							(fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getEventID() +
-		    									" " + fMsgReceived.getSenderPosition() + " " + fMsgReceived.getDetailCodeTwo_1() +
-		    									" " + fMsgReceived.getDetailCodeTwo_2())));
-				    		}
-				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
-				    			if(fMsgReceived.getTotalArea() > 50 && fMsgReceived.getFieryness() < 3) {
-				    				getHelp(time, fMsgReceived);
-				    			}
-				    		}
-				    		
-				    		msgSplited = null;
-				    		
-				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'F', time, this.getID(), 5, msgReceived.getSenderID().toString()));
-				    		break;
-				    	case CENTRAL:
-				    		msgReceived = new CentralToCentralProtocol(msgSplited);
-				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
-				    		
-				    		sendHelp(time, cMsgReceived);
-				    		
-				    		msgSplited = null;
-				    		
-				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'F', time, this.getID(), 5, msgReceived.getSenderID().toString()));
-				    		break;
-				    	case NOTHING:
-				    		msgSplited = null;
-				    		break;
-			        }
-			        
-	        	}
-	        }
-        }
+        handleMessage(time);
 	}
 
 	@Override
@@ -217,6 +171,57 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 				messages.remove(0);
 			}
 		}
+	}
+
+	@Override
+	public void handleMessage(int time) {
+		for (String message : msgFinal) {
+        	String[] msgSplited = message.split(" ");
+	        if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {		        
+			        switch(messageFrom(channelMsgReceived, msgSplited)) {
+				    	case AGENT:				    		
+				    		msgReceived = new FireToCentralProtocol(channelMsgReceived, msgSplited);
+				    		FireToCentralProtocol fMsgReceived = (FireToCentralProtocol) msgReceived;
+				    		
+				    		updateAgentsState(fMsgReceived);
+				    		
+				    		if (Protocol.get(fMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
+				    			messages.add(new CentralToCentralProtocol('F', time, this.getID(), 
+		    							(fMsgReceived.getCenterDestiny() + " " + fMsgReceived.getEventID() +
+		    									" " + fMsgReceived.getSenderPosition() + " " + fMsgReceived.getDetailCodeTwo_1() +
+		    									" " + fMsgReceived.getDetailCodeTwo_2())));
+				    		}
+				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
+				    			if(fMsgReceived.getTotalArea() > 50 && fMsgReceived.getFieryness() < 3) {
+				    				getHelp(time, fMsgReceived);
+				    			}
+				    		}
+				    		
+				    		msgSplited = null;
+				    		
+				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'F', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+				    		break;
+				    	case CENTRAL:
+				    		msgReceived = new CentralToCentralProtocol(msgSplited);
+				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
+				    		
+				    		sendHelp(time, cMsgReceived);
+				    		
+				    		msgSplited = null;
+				    		
+				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), msgReceived.getType(), 'F', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+				    		break;
+				    	case NOTHING:
+				    		msgSplited = null;
+				    		break;
+			        }
+			        
+	        	}
+	        }
+        }
 	}
 	
 }

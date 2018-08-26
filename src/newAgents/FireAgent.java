@@ -247,7 +247,8 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		state = s;
 	}
 	
-	private void handleMessage(int time) {
+	@Override
+	public void handleMessage(int time) {
 		for (String msgReceived : msgFinal) {
 	        String[] msgSplited = msgReceived.split(" ");
         	if (msgSplited != null) {

@@ -150,7 +150,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
         	msgFinal.add(new String (msgRaw));
         }
         
-        handleMessage();
+        handleMessage(time);
 
     }
 
@@ -377,7 +377,8 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		}
 	}
 	
-	private void handleMessage() {
+	@Override
+	public void handleMessage(int time) {
 		for (String msgReceived : msgFinal) {
 	        String[] msgSplited = msgReceived.split(" ");
         	if (msgSplited != null) {

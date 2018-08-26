@@ -50,4 +50,6 @@ public abstract class AbstractAgent<E extends StandardEntity> extends StandardAg
 	
 	public abstract void sendMessages(int time);
 	
+	public abstract void handleMessage(int time);
+	
 }

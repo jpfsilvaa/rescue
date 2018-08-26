@@ -29,6 +29,7 @@ import rescuecore2.worldmodel.EntityID;
 public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	
 	private HashMap<EntityID, PoliceToCentralProtocol> agentsState = new HashMap<>();
+	private int channelMsgReceived = 0;
 	
 	@Override
 	protected HashMap<StandardEntityURN, List<EntityID>> percept(int time, ChangeSet perceptions) {
@@ -49,55 +50,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
         	msgFinal.add(new String (msgRaw));
         }
         
-        for (String message : msgFinal) {
-        	String[] msgSplited = message.split(" ");
-	        if (msgSplited != null) {
-	        	if (msgSplited.length > 1) {		        
-			        switch(messageFrom(channelMsgReceived, msgSplited)) {
-				    	case AGENT:
-				    		msgReceived = new PoliceToCentralProtocol(channelMsgReceived, msgSplited);
-				    		PoliceToCentralProtocol pMsgReceived = (PoliceToCentralProtocol) msgReceived;
-				    		
-				    		updateAgentsState(pMsgReceived);
-				    		
-				    		if (Protocol.get(pMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
-				    			messages.add(new CentralToCentralProtocol('P', time, this.getID(), 
-		    							(pMsgReceived.getCenterDestiny() + " " + pMsgReceived.getEventID() +
-		    									" " + pMsgReceived.getSenderPosition() + " " + pMsgReceived.getDetailCodeTwo_1() +
-		    									" " + pMsgReceived.getDetailCodeTwo_2())));
-				    		}
-				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
-				    			if(pMsgReceived.getBlockadeRepairCost() > 15) {
-				    				getHelp(time, pMsgReceived);
-				    			}
-				    		}
-				    		
-				    		msgSplited = null;
-				    		
-				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
-				    		break;
-				    	case CENTRAL:
-				    		msgReceived = new CentralToCentralProtocol(msgSplited);
-				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
-				    		
-				    		sendHelp(time, cMsgReceived);
-				    		
-				    		msgSplited = null;
-				    		
-				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
-					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
-				    		break;
-				    	case NOTHING:
-				    		msgSplited = null;
-				    		break;
-			        }
-			        
-	        	}
-	        }
-        }
-        
-        
+		handleMessage(time);
 	}
 
 	@Override
@@ -225,6 +178,57 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				messages.remove(0);
 			}
 		}
+	}
+
+	@Override
+	public void handleMessage(int time) {
+		for (String message : msgFinal) {
+        	String[] msgSplited = message.split(" ");
+	        if (msgSplited != null) {
+	        	if (msgSplited.length > 1) {		        
+			        switch(messageFrom(channelMsgReceived, msgSplited)) {
+				    	case AGENT:
+				    		msgReceived = new PoliceToCentralProtocol(channelMsgReceived, msgSplited);
+				    		PoliceToCentralProtocol pMsgReceived = (PoliceToCentralProtocol) msgReceived;
+				    		
+				    		updateAgentsState(pMsgReceived);
+				    		
+				    		if (Protocol.get(pMsgReceived.getCode()) == Protocol.AGENT_EXTERN_EVENT) {
+				    			messages.add(new CentralToCentralProtocol('P', time, this.getID(), 
+		    							(pMsgReceived.getCenterDestiny() + " " + pMsgReceived.getEventID() +
+		    									" " + pMsgReceived.getSenderPosition() + " " + pMsgReceived.getDetailCodeTwo_1() +
+		    									" " + pMsgReceived.getDetailCodeTwo_2())));
+				    		}
+				    		else if (Protocol.get(msgReceived.getCode()) == Protocol.AGENT_EVENT) {
+				    			if(pMsgReceived.getBlockadeRepairCost() > 15) {
+				    				getHelp(time, pMsgReceived);
+				    			}
+				    		}
+				    		
+				    		msgSplited = null;
+				    		
+				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+				    		break;
+				    	case CENTRAL:
+				    		msgReceived = new CentralToCentralProtocol(msgSplited);
+				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
+				    		
+				    		sendHelp(time, cMsgReceived);
+				    		
+				    		msgSplited = null;
+				    		
+				    		// ADICIONANDO A CONFIRMAÇÃO DE MENSAGEM NA FILA
+					        messages.add(new MessageConfirmation(msgReceived.getChannel(), "C2A", 'P', time, this.getID(), 5, msgReceived.getSenderID().toString()));
+				    		break;
+				    	case NOTHING:
+				    		msgSplited = null;
+				    		break;
+			        }
+			        
+	        	}
+	        }
+        }
 	}
 	
 }

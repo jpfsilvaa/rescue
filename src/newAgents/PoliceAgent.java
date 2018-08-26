@@ -129,7 +129,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
         	msgFinal.add(new String (msgRaw));
         }
 
-        handleMessage();
+        handleMessage(time);
 	}
 
 	/**
@@ -287,7 +287,8 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
         return (int)best;
     }
     
-    private void handleMessage() {
+    @Override
+    public void handleMessage(int time) {
     	for (String msgReceived : msgFinal) {
 	        String[] msgSplited = msgReceived.split(" ");
         	if (msgSplited != null) {

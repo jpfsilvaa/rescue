@@ -19,6 +19,7 @@ import newAgents.AbstractAgent;
 import newAgents.AbstractAgent.Who;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
+import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.PoliceOffice;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.messages.AKSpeak;
@@ -80,9 +81,7 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				    		msgReceived = new CentralToCentralProtocol(msgSplited);
 				    		CentralToCentralProtocol cMsgReceived = (CentralToCentralProtocol) msgReceived;
 				    		
-				    		if (cMsgReceived.getDetail_1() > 15) {
-				    			sendHelp(time, cMsgReceived);
-				    		}
+				    		sendHelp(time, cMsgReceived);
 				    		
 				    		msgSplited = null;
 				    		
@@ -180,15 +179,17 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 			EntityID agent = entry.getKey();
 			if (agentsState.get(agent).getState().equals("PATROL") 
 					|| agentsState.get(agent).getState().equals("READY")) {
+				System.out.println(model.getEntity(cMsgReceived.getEventPosition()) instanceof Area);
 				messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
 						agent, cMsgReceived.getEventPosition()));
 				break;
 			}
 			else {
-				/* Caso todos os agentes policiais já estejam ocupados, é verifficado
+				/* Caso todos os agentes policiais já estejam ocupados, é verificado
 				 * qual deles está reparando um bloqueio de custo menor que o pedido de ajuda.
 				 */
 				if (agentsState.get(agent).getBlockadeRepairCost() < cMsgReceived.getDetail_1()) {
+					System.out.println(model.getEntity(cMsgReceived.getEventPosition()) instanceof Area);
 					messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
 							agent, cMsgReceived.getEventPosition()));
 					break;

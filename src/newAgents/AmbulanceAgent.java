@@ -259,8 +259,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	 */
 	private void setGoal(StandardEntityURN urn, HashMap<StandardEntityURN, List<EntityID>> hm, State s) {
 		goal = hm.get(urn).get(rnd.nextInt(hm.get(urn).size()));
-		//System.out.println("FOUND A NEW GOAL "+ urn.toString() +  " AT " + goal + " myPosition: " + me.getPosition() 
-		//+ " myBuriedness: " + me.getBuriedness());
 		state = s;
 	}
 	

@@ -85,7 +85,6 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 					Human civilian = (Human) model.getEntity(changed);
 					if (!civiliansPerceived.contains(changed.getValue())) { 
 						if(civilian.isBuriednessDefined() && civilian.getBuriedness() > 1) {
-							// System.out.println("PERCEBI CIVIL!!!!");
 							messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 2, 
 									(state + " " + me.getPosition() + " " + civilian.getID() + " A " + civilian.getBuriedness() 
 									+ " " + civilian.getHP())));
@@ -323,7 +322,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 		msgFinal.clear();
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
 			messages.add(new DummyProtocol(1, "A2C", 'P', time, me.getID(), 
-					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
+					0, state + " " + me.getPosition().toString()));
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {

@@ -103,7 +103,6 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					break;
 				case BLOCKADE:
 					Blockade b = (Blockade) model.getEntity(changed);
-					// System.out.println("changed -> " + Arrays.toString(b.getApexes()));
 					List<Integer> currentBlockade = Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList());
 					/*
 					 * // verifica se não é o mesmo bloqueio comparando os vertices 
@@ -112,7 +111,6 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 					 */
 					if (Collections.disjoint(blockadesPerceived, currentBlockade)) {
 						blockadesPerceived.addAll(Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList()));
-						// System.out.println("last" + Arrays.toString(b.getApexes()));
 						messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 2, 
 								(state + " " + me.getPosition() + " " + b.getID() + " P " + b.getRepairCost() + " " + b.getPosition())));
 					}
@@ -290,7 +288,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		msgFinal.clear();
 		if (messages.size() == 0) // Só mando código zero se não há código 1 ou 2 a ser enviado ainda.
 			messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 
-					0, state + " " + me.getPosition().toString())); // Código 0 ao Centro
+					0, state + " " + me.getPosition().toString()));
 		
 		messages = AbstractMessageProtocol.setFirstMessagesOnQueue(messages);
 		if (messages.size() > 0) {

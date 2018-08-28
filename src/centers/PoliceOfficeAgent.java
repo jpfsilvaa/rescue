@@ -26,6 +26,12 @@ import rescuecore2.standard.messages.AKSpeak;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ * @author jsilva
+ * 
+ * <p>Classe que representa o centro de comunicação dos agentes do tipo PoliceForce.
+ *
+ */
 public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	
 	private HashMap<EntityID, PoliceToCentralProtocol> agentsState = new HashMap<>();
@@ -77,6 +83,14 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
                           StandardEntityURN.POLICE_OFFICE);
     }
     
+    /**
+     * Método que, de acordo com a mensagem recebida, 
+     * retorna quem mandou esta mesma mensagem.
+     * quem mandou a mensagem. 
+     * @param channelMsgReceived canal pelo qual a mensagem foi recebida
+     * @param messageSplited mensagem da qual será identificado quem mandou
+     * @return Enum do tipo {@link Who} identificando
+     */
 	private Who messageFrom(int channelMsgReceived, String[] messageSplited) {
         Who result = Who.NOTHING;
         
@@ -101,9 +115,13 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	}
 	
 	/**
-	 * Método que verifica no hashMap de estados dos agentes 
-	 * policiais para definir a quem será solicitada ajuda, 
-	 * e assim defini um HelpProtocol a ser enviado.
+	 * <p>Método que verifica no hashMap de estados dos agentes 
+	 * que essa central coordena para definir a quem será solicitada ajuda, 
+	 * e assim defini um {@link HelpProtocol} a ser enviado.
+	 * <p>Caso todos os agentes já estejam ocupados, é verificado
+	 * qual deles está resolvendo um evento que é menos prioritário que esse pedido de ajuda.
+	 * @param time Ciclo do simulador que é utilizado na instancia de um {@link HelpProtocol} 
+	 * @param aMsgReceived Objeto que representa a mensagem recebida
 	 */
 	private void getHelp(int time, PoliceToCentralProtocol pMsgReceived) {
 		for (Map.Entry<EntityID, PoliceToCentralProtocol> entry : agentsState.entrySet()) {
@@ -115,9 +133,6 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 				break;
 			}
 			else {
-				/* Caso todos os agentes policiais já estejam ocupados, é verifficado
-				 * qual deles está reparando um bloqueio de custo menor que o pedido de ajuda.
-				 */
 				if (agentsState.get(agent).getBlockadeRepairCost() < pMsgReceived.getBlockadeRepairCost()) {
 					messages.add(new HelpProtocol(1, 'P', time, this.getID(), 
 							agent, pMsgReceived.getSenderPosition()));
@@ -127,6 +142,13 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 		}		
 	}
 	
+	/**
+	 * <p>Método similar ao getHelp que, de acordo com o 
+	 * pedido de ajuda vindo de uma outra central, determina 
+	 * qual agente deve se responsabilizar pelo evento.
+	 * @param time Ciclo do simulador
+	 * @param cMsgReceived Objeto que representa a mensagem recebida de uma outra central
+	 */
 	private void sendHelp(int time, CentralToCentralProtocol cMsgReceived) {
 		for (Map.Entry<EntityID, PoliceToCentralProtocol> entry : agentsState.entrySet()) {
 			EntityID agent = entry.getKey();
@@ -151,9 +173,10 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 	}
 	
 	/**
-	 * Adiciona o state de cada agente a um hashMap pra central 
+	 * Adiciona o estado de cada agente a um hashMap pra central 
 	 * saber quem está disponível caso necessite enviar ajuda
 	 * a algum outro bombeiro.
+	 * @param aMsgReceived Representa a mensagem enviada pelo agente que essa central coordena.
 	 */
 	private void updateAgentsState(PoliceToCentralProtocol pMsgReceived) {
 		agentsState.put(pMsgReceived.getSenderID(), pMsgReceived);

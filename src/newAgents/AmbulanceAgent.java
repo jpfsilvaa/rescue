@@ -103,7 +103,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 					break;
 				case BLOCKADE:
 					Blockade b = (Blockade) model.getEntity(changed);
-					// System.out.println("changed -> " + Arrays.toString(b.getApexes()));
 					List<Integer> currentBlockade = Arrays.stream(b.getApexes()).boxed().collect(Collectors.toList());
 					/*
 					 * verifica se não é o mesmo bloqueio comparando os vertices 

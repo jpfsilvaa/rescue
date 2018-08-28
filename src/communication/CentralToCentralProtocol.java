@@ -2,6 +2,10 @@ package communication;
 
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ * @author jsilva
+ * <p>Classe que faz o tratamento das mensagens de Central para Central.
+ */
 public class CentralToCentralProtocol extends AbstractMessageProtocol {
 	private final static int CHANNEL = 2;
 	private final static String TYPE = "C2C";

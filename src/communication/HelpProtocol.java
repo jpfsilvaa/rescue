@@ -6,8 +6,7 @@ import rescuecore2.worldmodel.EntityID;
 
 /**
  * @author jsilva
- * <br><br>
- * Classe utilizada pelo Centro de comando de cada agente, para quando precisar 
+ * <p>Classe utilizada pelo Centro de comando de cada agente, para quando precisar 
  * solicitar um pedido de ajuda em um evento que só um agente não é suficiente
  * para resolvê-lo.
  */

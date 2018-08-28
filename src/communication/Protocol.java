@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.lang.Integer;
 
+/**
+ * @author jsilva
+ *<p>Enum que representa os protocolos utilizados pelos agentes e suas centrais, auxiliando no tratamento das mensagens.
+ */
 public enum Protocol {
 	AGENT_STATUS(0),
 	AGENT_EVENT(1),

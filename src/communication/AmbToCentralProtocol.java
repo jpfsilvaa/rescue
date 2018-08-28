@@ -2,6 +2,10 @@ package communication;
 
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ * @author jsilva
+ * <p>Classe que faz o tratamento das mensagens do agente ambulancia para sua central e vice-versa.
+ */
 public class AmbToCentralProtocol extends AbstractMessageProtocol {
 	private String state;
 	private int civilBuriedness;

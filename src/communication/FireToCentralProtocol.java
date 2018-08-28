@@ -4,8 +4,7 @@ import rescuecore2.worldmodel.EntityID;
 
 /**
  * @author jsilva
- * <br><br>
- * Classe utilizada entre a comunicação dos agentes bombeiros e sua central de comando.
+ * <p>Classe que faz o tratamento das mensagens do agente bombeiro para sua central, e vice-versa.
  */
 public class FireToCentralProtocol extends AbstractMessageProtocol{
 

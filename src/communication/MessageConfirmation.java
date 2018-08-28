@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 import rescuecore2.worldmodel.EntityID;
 
-
+/**
+ * @author jsilva
+ * <p>Classe que faz o tratamento das mensagens de confirmação.
+ */
 public class MessageConfirmation extends AbstractMessageProtocol{
 	private EntityID destiny;
 	

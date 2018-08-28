@@ -57,13 +57,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
         search = new SampleSearch(model);
 	}
 	
-    /**
-     * O agente ambulância deve obter a percepção de civil (que se estiverem
-     *  com um "buriedness" > 1 devem ser socorridos), de vias para criar patrulhas,
-     *  e de pŕedios para serem explorados (somente uma vez, utilizando o método "wasExplored" para isso), 
-     *  e colocar essas três percepções em um hashMap que vai ser entregue ao método deliberate,
-     *  que vai tratar essas informações e tomar decisões.
-     */
 	@Override
 	protected HashMap <StandardEntityURN, List <EntityID>> percept(int time, ChangeSet perceptions) {
 		List <EntityID> roads = new ArrayList <EntityID>();
@@ -154,13 +147,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 
     }
 
-	/**
-	 * O método "deliberate" toma as decisões de acordo com as percepções obtidas e inseridas no HashMap "possibleGoals".<br>
-	 * Se estiver em algum estado importante, o primeiro if já retorna da função, se não,
-	 * é decidido o próximo estado do agente primeiramente se houver Civis nas percepções, depois se houver prédios
-	 * a serem explorados, depois, por último, se houverem vias para patrulhar. Tudo com o auxílio do método
-	 * "setGoal" que define o objetivo do agente a ser acionado no método "act". 
-	 */
 	@Override
 	protected void deliberate(HashMap <StandardEntityURN, List <EntityID>> possibleGoals) {
 		if(state == State.RESCUING || state == State.MOVING 
@@ -190,17 +176,6 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		}
 	}
 
-	/**
-	 * O método "act" do agente ambulância tem os estados de:
-	 * <li>BUILDING_SEARCH: De acordo com o "goal" definido,
-	 *  se move para o prédio e quando chega, chaveia para o estado "PATROL"</li>
-	 * <li>PATROL: Faz a patrulha quando chega no "road" definido em "goal", muda para o estado
-	 * "READY", que é um estado intermediário demonstrando que o agente está "livre" para ações.</li>
-	 * <li>RESCUING: Estado que faz o resgate do agente a ser salvo e o coloca na ambulancia, mudando
-	 * para o estado "UNLOADING" para descarregar o agente resgatado.</li>
-	 * <li>UNLOADING: Estado que descarrega o agente desntro de um refúgio, completando o objetivo principal do
-	 *  agente ambulância, que é o resgate completo de um civil.</li> 
-	 */
 	@Override
 	protected void act(int time) {
 		List <EntityID> path = new ArrayList<EntityID>();
@@ -278,7 +253,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 
 	
 	/**
-	 * Esse método define qual vai ser o EntityID do objetivo do agente:<br>
+	 * <p>Esse método define qual vai ser o EntityID do objetivo do agente:
 	 * @param urn é o URN de qual tipo de EntityID, no model atual, para saber qual objetivo será traçado
 	 * @param hm é o HashMap que contém os EntityIDs dos objetivos, obtidos pela percepção do agente
 	 * @param s é o estado que vai ser definido, ao ser definido o objetivo
@@ -291,10 +266,11 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	}
 	
 	/**
-	 * Método que modifica o estado atual do agente, de acordo com as condições do "deliberate".<br>
-	 * Caso o objetivo (goal) seja um civil, é feita uma coordenação ṕara que quando o agente chegar no local desejado, 
-	 * o estado é modificidado.<br>
-	 * Caso o objetivo não seja um civil, é feito praticamente a mesma lógica para quando se chega ao local desejado.
+	 * <p>Método que modifica o estado do agente e define seu objetivo.
+	 * @param goal Objetivo do agente
+	 * @param path caminho para o agente atingir seu objetivo
+	 * @param nxtState estado para o qual o agente será definido
+	 * @time Ciclo do simulador
 	 */
 	private void movState(EntityID goal, List<EntityID> path, State nxtState, int time) {
 		if(model.getEntity(goal) instanceof Human) {
@@ -342,6 +318,11 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		}
 	}
 	
+	/**
+	 * <p>Método que verifica se um prédio ja foi visitado de acordo com seu entity
+	 * @param changed entnti do prédio percebido
+	 * @return true se o prédio ja foi visitado
+	 */
 	private boolean wasExplored(EntityID changed) {
 		if(exploredBuildings.contains(changed))
 			return true;
@@ -349,6 +330,10 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 			return false;
 	}
 
+	/**
+	 * Método que verifica se já existe um civil dentro da ambulancia
+	 * @return true se já existe um civil dentro da ambulancia
+	 */
     private boolean someoneOnBoard() {
         for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
             if (((Human)next).getPosition().equals(getID())) {

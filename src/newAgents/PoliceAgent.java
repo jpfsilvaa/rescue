@@ -221,9 +221,7 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
 	}
 	
 	/**
-	 * Esse método define qual vai ser o EntityID do objetivo do agente:<br>
-	 * <li>Caso for um bloqueio, o método define o "currentBlockade", que é o EntityID do bloqueio que irá ser limpo;
-	 * <li>Caso for uma via, o método define o "goal", que é o EntityID da via que vai ser criado o caminho.
+	 * <p>Esse método define qual vai ser o EntityID do objetivo do agente:
 	 * @param urn é o URN de qual tipo de EntityID, no model atual, para saber qual objetivo será traçado
 	 * @param hm é o HashMap que contém os EntityIDs dos objetivos, obtidos pela percepção do agente
 	 * @param s é o estado que vai ser definido, ao ser definido o objetivo

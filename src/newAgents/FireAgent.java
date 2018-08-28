@@ -242,6 +242,12 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		System.out.println();
 	}
 
+	/**
+	 * <p>Esse método define qual vai ser o EntityID do objetivo do agente:
+	 * @param urn é o URN de qual tipo de EntityID, no model atual, para saber qual objetivo será traçado
+	 * @param hm é o HashMap que contém os EntityIDs dos objetivos, obtidos pela percepção do agente
+	 * @param s é o estado que vai ser definido, ao ser definido o objetivo
+	 */
 	private void setGoal(StandardEntityURN urn, HashMap<StandardEntityURN, List<EntityID>> hm, State s) {
 		goal = hm.get(urn).get(rnd.nextInt(hm.get(urn).size()));
 		state = s;

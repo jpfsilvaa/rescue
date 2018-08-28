@@ -234,7 +234,7 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		sendMessages(time);
+		// sendMessages(time);
 		heardMessage(time, heard);
 		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);

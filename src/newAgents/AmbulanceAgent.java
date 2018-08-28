@@ -231,7 +231,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		sendMessages(time);
+		// sendMessages(time);
 		
 		if(someoneOnBoard() && location() instanceof Refuge) {
 			System.out.println("(A) UNLOADING");

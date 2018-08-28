@@ -91,9 +91,9 @@ public final class LaunchSampleAgents {
 
     private static void connect(ComponentLauncher launcher, int fb, int pf, int at, Config config) throws InterruptedException, ConnectionException {
         int i = 0;
-        int ac = 1; // Ambulance Centre
-        int po = 1; // Police Office
-        int fs = 1; // Fire Station
+        int ac = 0; // Ambulance Centre
+        int po = 0; // Police Office
+        int fs = 0; // Fire Station
         try {
             while (fb-- != 0) {
             	System.out.println("Connecting fire brigade " + (i++) + "...");

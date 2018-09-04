@@ -36,26 +36,26 @@
   <rcr:firebrigade rcr:location="278"/>
   <rcr:firebrigade rcr:location="257"/>
 -->
-<!-- C -->
-  <rcr:policeforce rcr:location="976"/>
-  <rcr:policeforce rcr:location="273"/>
-  <rcr:policeforce rcr:location="976"/>
-  <rcr:policeforce rcr:location="273"/>
-  <rcr:policeforce rcr:location="278"/>
-  <rcr:policeforce rcr:location="970"/>
-  <rcr:policeforce rcr:location="271"/>
-  <rcr:policeforce rcr:location="976"/>
-  <rcr:policeforce rcr:location="970"/>
-  <rcr:policeforce rcr:location="271"/>
+<!-- B -->
+  <rcr:policeforce rcr:location="256"/>
+  <rcr:policeforce rcr:location="269"/>
+  <rcr:policeforce rcr:location="969"/>
+  <rcr:policeforce rcr:location="262"/>
+  <rcr:policeforce rcr:location="975"/>
+  <rcr:policeforce rcr:location="256"/>
+  <rcr:policeforce rcr:location="269"/>
+  <rcr:policeforce rcr:location="969"/>
+  <rcr:policeforce rcr:location="262"/>
+  <rcr:policeforce rcr:location="975"/>
   <rcr:policeoffice rcr:location="934"/>
 
 <!-- C -->
+  <rcr:firebrigade rcr:location="976"/>
+  <rcr:firebrigade rcr:location="273"/>
   <rcr:firebrigade rcr:location="278"/>
   <rcr:firebrigade rcr:location="970"/>
   <rcr:firebrigade rcr:location="271"/>
   <rcr:firebrigade rcr:location="976"/>
-  <rcr:firebrigade rcr:location="273"/>
-  <rcr:firebrigade rcr:location="278"/>
   <rcr:firebrigade rcr:location="273"/>
   <rcr:firebrigade rcr:location="278"/>
   <rcr:firebrigade rcr:location="970"/>

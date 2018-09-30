@@ -69,8 +69,8 @@ public class FireStationAgent extends AbstractAgent<FireStation> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		sendMessages(time);
 		heardMessage(time, heard);
+		sendMessages(time);
 	}
 
     @Override

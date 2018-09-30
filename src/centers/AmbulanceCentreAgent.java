@@ -69,8 +69,8 @@ public class AmbulanceCentreAgent extends AbstractAgent<AmbulanceCentre> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		sendMessages(time);
 		heardMessage(time, heard);
+		sendMessages(time);
 	}
 
 	

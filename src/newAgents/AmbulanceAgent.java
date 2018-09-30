@@ -230,9 +230,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 	}
 
 	@Override
-	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		sendMessages(time);
-		
+	protected void think(int time, ChangeSet changed, Collection<Command> heard) {		
 		if(someoneOnBoard() && location() instanceof Refuge) {
 			System.out.println("(A) UNLOADING");
 			sendUnload(time);
@@ -242,7 +240,7 @@ public class AmbulanceAgent extends AbstractAgent<AmbulanceTeam>{
 		HashMap <StandardEntityURN, List <EntityID>> goals = percept(time, changed);
 		deliberate(goals);
 		act(time);
-		System.out.println();
+		sendMessages(time);
 	}
 	
 	@Override

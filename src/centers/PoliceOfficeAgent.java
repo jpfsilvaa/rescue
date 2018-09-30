@@ -71,8 +71,8 @@ public class PoliceOfficeAgent extends AbstractAgent<PoliceOffice> {
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		sendMessages(time);
 		heardMessage(time, heard);
+		sendMessages(time);
 	}
 
 	

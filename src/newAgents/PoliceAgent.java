@@ -270,17 +270,20 @@ public class PoliceAgent extends AbstractAgent<PoliceForce>{
     }
 
     private int findDistanceTo(Blockade b, int x, int y) {
-        List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
-        double best = Double.MAX_VALUE;
-        Point2D origin = new Point2D(x, y);
-        for (Line2D next : lines) {
-            Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-            double d = GeometryTools2D.getDistance(origin, closest);
-            if (d < best)
-                best = d;
-
-        }
-        return (int)best;
+    	if (b != null) {
+	        List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
+	        double best = Double.MAX_VALUE;
+	        Point2D origin = new Point2D(x, y);
+	        for (Line2D next : lines) {
+	            Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+	            double d = GeometryTools2D.getDistance(origin, closest);
+	            if (d < best)
+	                best = d;
+	
+	        }
+	        return (int) best;
+    	}
+        return 999999;
     }
     
     @Override

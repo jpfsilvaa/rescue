@@ -50,9 +50,9 @@ public final class LaunchSampleAgents {
             int port = config.getIntValue(Constants.KERNEL_PORT_NUMBER_KEY, Constants.DEFAULT_KERNEL_PORT_NUMBER);
             String host = config.getValue(Constants.KERNEL_HOST_NAME_KEY, Constants.DEFAULT_KERNEL_HOST_NAME);
             
-            int fb = 10;
-            int pf = 10;
-            int at = 10; 
+            int fb = 20;
+            int pf = 20;
+            int at = 20; 
 
             /*
             // CHECKSTYLE:OFF:ModifiedControlVariable

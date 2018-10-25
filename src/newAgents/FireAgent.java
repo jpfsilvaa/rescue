@@ -167,15 +167,19 @@ public class FireAgent extends AbstractAgent<FireBrigade>{
 		switch(state) {
 			case EXTINGUISHING:
 				Building buildingGoal = (Building) model.getEntity(goal);
-				if (!buildingsInFirePerceived.contains(goal.getValue())) {
-					messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 1, 
-							(state + " " + me.getPosition() + " " + buildingGoal.getID() + " " +
-							buildingGoal.getTotalArea() + " " + buildingGoal.getFieryness())));
-					buildingsInFirePerceived.add(goal.getValue());
+				if (buildingGoal != null) {
+					if (!buildingsInFirePerceived.contains(goal.getValue())) {
+						messages.add(new FireToCentralProtocol(1, "A2C", 'F', time, me.getID(), 1, 
+								(state + " " + me.getPosition() + " " + buildingGoal.getID() + " " +
+								buildingGoal.getTotalArea() + " " + buildingGoal.getFieryness())));
+						buildingsInFirePerceived.add(goal.getValue());
+					}
+	
+					sendExtinguish(time, goal, maxPower);
+					if(buildingGoal.getFieryness() >= 4)
+						state = State.READY;
 				}
-
-				sendExtinguish(time, goal, maxPower);
-				if(buildingGoal.getFieryness() >= 4)
+				else
 					state = State.READY;
 				break;
 			case MOVING:

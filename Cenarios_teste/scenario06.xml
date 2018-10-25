@@ -47,6 +47,16 @@
   <rcr:policeforce rcr:location="969"/>
   <rcr:policeforce rcr:location="262"/>
   <rcr:policeforce rcr:location="975"/>
+  <rcr:policeforce rcr:location="279"/>
+  <rcr:policeforce rcr:location="297"/>
+  <rcr:policeforce rcr:location="330"/>
+  <rcr:policeforce rcr:location="268"/>
+  <rcr:policeforce rcr:location="257"/>
+  <rcr:policeforce rcr:location="256"/>
+  <rcr:policeforce rcr:location="269"/>
+  <rcr:policeforce rcr:location="969"/>
+  <rcr:policeforce rcr:location="262"/>
+  <rcr:policeforce rcr:location="975"/>
   <rcr:policeoffice rcr:location="934"/>
 
 <!-- A -->
@@ -60,9 +70,29 @@
   <rcr:firebrigade rcr:location="330"/>
   <rcr:firebrigade rcr:location="268"/>
   <rcr:firebrigade rcr:location="257"/>
+  <rcr:firebrigade rcr:location="256"/>
+  <rcr:firebrigade rcr:location="269"/>
+  <rcr:firebrigade rcr:location="969"/>
+  <rcr:firebrigade rcr:location="262"/>
+  <rcr:firebrigade rcr:location="975"/>
+  <rcr:firebrigade rcr:location="279"/>
+  <rcr:firebrigade rcr:location="297"/>
+  <rcr:firebrigade rcr:location="330"/>
+  <rcr:firebrigade rcr:location="268"/>
+  <rcr:firebrigade rcr:location="257"/>
   <rcr:firestation rcr:location="249"/>
 
 <!-- C -->
+  <rcr:ambulanceteam rcr:location="976"/>
+  <rcr:ambulanceteam rcr:location="273"/>
+  <rcr:ambulanceteam rcr:location="278"/>
+  <rcr:ambulanceteam rcr:location="297"/>
+  <rcr:ambulanceteam rcr:location="330"/>
+  <rcr:ambulanceteam rcr:location="268"/>
+  <rcr:ambulanceteam rcr:location="257"/>
+  <rcr:ambulanceteam rcr:location="278"/>
+  <rcr:ambulanceteam rcr:location="970"/>
+  <rcr:ambulanceteam rcr:location="271"/>
   <rcr:ambulanceteam rcr:location="976"/>
   <rcr:ambulanceteam rcr:location="273"/>
   <rcr:ambulanceteam rcr:location="278"/>
